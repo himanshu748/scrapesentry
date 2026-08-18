@@ -3,7 +3,9 @@
 ## Project links
 
 - Source code: https://github.com/himanshu748/scrapesentry
-- Live demo: pending first Render Blueprint sync
+- Live demo: https://scrapesentry-himanshu748.onrender.com
+- API health: https://scrapesentry-api-himanshu748.onrender.com/health
+- CI: https://github.com/himanshu748/scrapesentry/actions/workflows/ci.yml
 - Demo video: recording script is ready in `outputs/ScrapeSentry-90-Second-Demo.md`
 - Bright Data target: https://books.toscrape.com/
 
@@ -65,9 +67,11 @@ Most scraper tools focus on extraction or automatic selector repair. ScrapeSentr
 
 - 26 automated Python tests cover contracts, provider parsing, state transitions, idempotency, monitoring and API behavior.
 - TypeScript validation and the Next.js production build pass.
+- GitHub Actions CI is public and green on `main`.
 - The demo runs through baseline, break, quarantine, repair, approval, canary and production release without page reloads.
 - Latest broken output never replaces the last known good snapshot.
 - Repeated failures reuse the active incident rather than producing alert storms.
+- The deployed Render flow was exercised end to end with no browser console errors.
 
 ## AI assistance disclosure
 

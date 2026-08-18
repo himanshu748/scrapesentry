@@ -4,6 +4,10 @@ ScrapeSentry is an MCP server and operator dashboard that detects silent scraper
 
 Source: [github.com/himanshu748/scrapesentry](https://github.com/himanshu748/scrapesentry)
 
+Live judge demo: [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com)
+
+CI: [latest ScrapeSentry CI run](https://github.com/himanshu748/scrapesentry/actions/workflows/ci.yml)
+
 This repository contains a deterministic judge demo and a production adapter for Bright Data Scraper Studio.
 
 The public demo is designed to be safe for judges: it replays a deterministic failure against captured production evidence, never consumes Bright Data credits and labels recorded provider evidence clearly. Live mode runs the same contract engine against the configured Scraper Studio collector.
@@ -134,12 +138,14 @@ The API health check gates dashboard startup, so the judge demo does not open ag
 
 ## Deploy on Render
 
-The included `render.yaml` creates two free web services in one Blueprint: a FastAPI control plane and a Next.js dashboard. Browser requests stay on the dashboard origin, then Next.js forwards API calls to FastAPI over Render's private network.
+The included `render.yaml` creates two free web services in one Blueprint: a FastAPI control plane and a Next.js dashboard. Browser requests stay on the dashboard origin, then Next.js forwards API calls to the API service URL that Render injects from `RENDER_EXTERNAL_URL`.
 
 1. Push this repository to GitHub.
 2. In Render, create a new Blueprint from the repository.
 3. Keep the default `main` branch and apply the Blueprint.
 4. Open the `scrapesentry-himanshu748` service URL after both health checks pass.
+
+The deployed judge experience is available at [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com). Its full baseline, drift, quarantine, repair, approval, verification and release flow was exercised after deployment with no browser console errors. The API health endpoint is [scrapesentry-api-himanshu748.onrender.com/health](https://scrapesentry-api-himanshu748.onrender.com/health).
 
 The public deployment intentionally uses `APP_ENV=demo`. Do not add a Bright Data token to the public judge service. Use the credential-safe GitHub workflow or a private production deployment for live scheduled checks.
 
