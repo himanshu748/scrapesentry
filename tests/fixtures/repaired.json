@@ -1,0 +1,14 @@
+[
+  {"sku":"SS-001","title":"Atlas Mechanical Keyboard","price":129.0,"list_price":149.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/atlas"},
+  {"sku":"SS-002","title":"Beacon USB-C Hub","price":79.0,"list_price":79.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/beacon"},
+  {"sku":"SS-003","title":"Cirrus Desk Lamp","price":64.0,"list_price":89.0,"availability":"low_stock","url":"https://demo.scrapesentry.dev/products/cirrus"},
+  {"sku":"SS-004","title":"Drift Noise-Canceling Headphones","price":219.0,"list_price":249.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/drift"},
+  {"sku":"SS-005","title":"Ember Portable SSD","price":109.0,"list_price":129.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/ember"},
+  {"sku":"SS-006","title":"Flux Webcam","price":89.0,"list_price":99.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/flux"},
+  {"sku":"SS-007","title":"Glyph Drawing Tablet","price":179.0,"list_price":199.0,"availability":"low_stock","url":"https://demo.scrapesentry.dev/products/glyph"},
+  {"sku":"SS-008","title":"Halo Monitor Light","price":58.0,"list_price":69.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/halo"},
+  {"sku":"SS-009","title":"Ion Wireless Mouse","price":74.0,"list_price":89.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/ion"},
+  {"sku":"SS-010","title":"Jolt GaN Charger","price":49.0,"list_price":59.0,"availability":"out_of_stock","url":"https://demo.scrapesentry.dev/products/jolt"},
+  {"sku":"SS-011","title":"Kite Laptop Stand","price":92.0,"list_price":109.0,"availability":"in_stock","url":"https://demo.scrapesentry.dev/products/kite"},
+  {"sku":"SS-012","title":"Lumen Stream Deck","price":149.0,"list_price":169.0,"availability":"low_stock","url":"https://demo.scrapesentry.dev/products/lumen"}
+]

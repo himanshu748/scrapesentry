@@ -1,0 +1,41 @@
+name: Live Scraper Health
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-scraper-health
+  cancel-in-progress: false
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: production
+      BRIGHTDATA_API_TOKEN: ${{ secrets.BRIGHTDATA_API_TOKEN }}
+      BRIGHTDATA_COLLECTOR_ID: c_msxcshnz2bwrroekf3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e .
+      - name: Run the real Scraper Studio collector and enforce its contract
+        if: ${{ env.BRIGHTDATA_API_TOKEN != '' }}
+        run: python -m app.live_smoke | tee live-smoke.json
+      - name: Keep the provider job ID and contract result as evidence
+        if: ${{ env.BRIGHTDATA_API_TOKEN != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: brightdata-live-smoke-${{ github.run_id }}
+          path: live-smoke.json
+          retention-days: 14
+      - name: Explain how to activate the live check
+        if: ${{ env.BRIGHTDATA_API_TOKEN == '' }}
+        run: echo "Add BRIGHTDATA_API_TOKEN as a repository secret to activate the scheduled production check."

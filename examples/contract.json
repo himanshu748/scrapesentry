@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "row_count_min": 12,
+  "row_count_max": 12,
+  "max_duplicate_rate": 0,
+  "unique_fields": ["sku", "url"],
+  "canary_inputs": [
+    { "url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html" },
+    { "url": "https://books.toscrape.com/catalogue/sapiens-a-brief-history-of-humankind_996/index.html" }
+  ],
+  "fields": {
+    "sku": { "type": "string", "required": true },
+    "title": { "type": "string", "max_null_rate": 0.01 },
+    "price": { "type": "number", "minimum": 0, "maximum": 10000 },
+    "list_price": { "type": "number", "minimum": 0, "maximum": 10000 },
+    "availability": {
+      "type": "string",
+      "allowed_values": ["in_stock", "low_stock", "out_of_stock"]
+    },
+    "url": { "type": "string", "format": "url" },
+    "rating": {
+      "type": "string",
+      "allowed_values": ["One", "Two", "Three", "Four", "Five"]
+    },
+    "category": { "type": "string" },
+    "description": { "type": "string" },
+    "image_url": { "type": "string", "format": "url" }
+  },
+  "predicates": [
+    {
+      "expression": "price <= list_price",
+      "message": "Sale price cannot exceed list price.",
+      "severity": "blocking"
+    }
+  ]
+}

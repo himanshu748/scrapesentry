@@ -1,0 +1,14 @@
+[
+  {"sku":"SS-001","title":"Atlas Mechanical Keyboard","price_text":"$129.00","list_price":149.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/atlas"},
+  {"sku":"SS-002","title":"Beacon USB-C Hub","price_text":"$79.00","list_price":79.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/beacon"},
+  {"sku":"SS-003","title":"Cirrus Desk Lamp","price_text":"$64.00","list_price":89.0,"stock_label":"Only 2 left","url":"https://demo.scrapesentry.dev/products/cirrus"},
+  {"sku":"SS-004","title":"Drift Noise-Canceling Headphones","price_text":"$219.00","list_price":249.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/drift"},
+  {"sku":"SS-005","title":"Ember Portable SSD","price_text":"$109.00","list_price":129.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/ember"},
+  {"sku":"SS-006","title":"Flux Webcam","price_text":"$89.00","list_price":99.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/flux"},
+  {"sku":"SS-007","title":"Glyph Drawing Tablet","price_text":"$179.00","list_price":199.0,"stock_label":"Only 1 left","url":"https://demo.scrapesentry.dev/products/glyph"},
+  {"sku":"SS-008","title":"Halo Monitor Light","price_text":"$58.00","list_price":69.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/halo"},
+  {"sku":"SS-009","title":"Ion Wireless Mouse","price_text":"$74.00","list_price":89.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/ion"},
+  {"sku":"SS-010","title":"Jolt GaN Charger","price_text":"$49.00","list_price":59.0,"stock_label":"Unavailable","url":"https://demo.scrapesentry.dev/products/jolt"},
+  {"sku":"SS-011","title":"Kite Laptop Stand","price_text":"$92.00","list_price":109.0,"stock_label":"Ready to ship","url":"https://demo.scrapesentry.dev/products/kite"},
+  {"sku":"SS-012","title":"Lumen Stream Deck","price_text":"$149.00","list_price":169.0,"stock_label":"Only 3 left","url":"https://demo.scrapesentry.dev/products/lumen"}
+]

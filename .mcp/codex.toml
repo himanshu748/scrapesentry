@@ -1,0 +1,7 @@
+[mcp_servers.scrapesentry]
+command = "python"
+args = ["-m", "app.server"]
+cwd = "/absolute/path/to/scrapesentry"
+
+[mcp_servers.scrapesentry.env]
+APP_ENV = "demo"

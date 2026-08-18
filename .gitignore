@@ -1,0 +1,15 @@
+.DS_Store
+.env
+.pytest_cache/
+.playwright-cli/
+.ruff_cache/
+.coverage
+__pycache__/
+*.py[cod]
+.venv/
+dashboard/.next/
+dashboard/node_modules/
+dashboard/.env.local
+*.tsbuildinfo
+output/
+work/

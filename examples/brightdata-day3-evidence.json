@@ -1,0 +1,30 @@
+{
+  "captured_at": "2026-08-18T12:03:10+05:30",
+  "collection": {
+    "job_id": "j_msyad7l21v1fnqbljn",
+    "trigger": "API",
+    "template": "v2 (prod)",
+    "inputs": 1,
+    "records": 12,
+    "failed_crawls": 0,
+    "pages": 13,
+    "success_rate": 100.0,
+    "queued_at": "2026-08-18T12:02:58+05:30",
+    "started_at": "2026-08-18T12:02:58+05:30",
+    "finished_at": "2026-08-18T12:03:10+05:30",
+    "job_time_ms": 12288,
+    "spent_usd": 0.0
+  },
+  "self_healing": {
+    "job_id": "ia_msya56gd1y2ucwwy0j",
+    "status": "done",
+    "success": true,
+    "preview_records": 1,
+    "completed_steps": 10,
+    "triggered_at": "2026-08-18T11:56:43+05:30",
+    "finished_at": "2026-08-18T12:01:53+05:30",
+    "elapsed_seconds": 309.7,
+    "draft_status": "published_production_v2",
+    "verified_by_collection": "j_msyad7l21v1fnqbljn"
+  }
+}

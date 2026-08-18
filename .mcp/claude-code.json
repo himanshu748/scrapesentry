@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "scrapesentry": {
+      "command": "python",
+      "args": ["-m", "app.server"],
+      "cwd": "/absolute/path/to/scrapesentry",
+      "env": { "APP_ENV": "demo" }
+    }
+  }
+}
