@@ -25,7 +25,7 @@ services:
     branch: main
     rootDir: dashboard
     autoDeploy: true
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start -- --hostname 0.0.0.0 --port $PORT
     healthCheckPath: /
     envVars:
