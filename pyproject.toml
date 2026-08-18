@@ -27,6 +27,11 @@ dev = [
 [project.scripts]
 scrapesentry-mcp = "app.server:main"
 
+[project.urls]
+Homepage = "https://github.com/himanshu748/scrapesentry"
+Repository = "https://github.com/himanshu748/scrapesentry"
+Issues = "https://github.com/himanshu748/scrapesentry/issues"
+
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
 

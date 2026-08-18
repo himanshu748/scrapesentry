@@ -2,6 +2,8 @@
 
 ScrapeSentry is an MCP server and operator dashboard that detects silent scraper drift, quarantines unsafe output and sends actionable failures to Bright Data Self-Healing. Every repair is held behind an approval gate then checked on canary and production output before recovery is declared.
 
+Source: [github.com/himanshu748/scrapesentry](https://github.com/himanshu748/scrapesentry)
+
 This repository contains a deterministic judge demo and a production adapter for Bright Data Scraper Studio.
 
 The public demo is designed to be safe for judges: it replays a deterministic failure against captured production evidence, never consumes Bright Data credits and labels recorded provider evidence clearly. Live mode runs the same contract engine against the configured Scraper Studio collector.

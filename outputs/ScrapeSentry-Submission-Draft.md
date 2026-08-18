@@ -2,7 +2,7 @@
 
 ## Project links
 
-- Source code: pending GitHub authentication
+- Source code: https://github.com/himanshu748/scrapesentry
 - Live demo: pending first Render Blueprint sync
 - Demo video: recording script is ready in `outputs/ScrapeSentry-90-Second-Demo.md`
 - Bright Data target: https://books.toscrape.com/

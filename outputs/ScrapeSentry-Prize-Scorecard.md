@@ -13,7 +13,7 @@ Updated from the WeMakeDevs Day 1 and Day 2 emails plus the official Scrape-Vers
 | Self-Healing shown | Real job `ia_msya56gd1y2ucwwy0j`, approved production Version 2 and a successful post-heal collection | Complete |
 | Example structured output | Raw provider output plus normalized evidence in `examples/` | Complete |
 | AI assistance disclosed | README has a specific AI assistance disclosure | Complete |
-| Public source repository | Current workspace is not a Git repository | Blocked |
+| Public source repository | `https://github.com/himanshu748/scrapesentry` | Complete |
 | Clear README | Architecture, setup, live mode, MCP tools and safety model are documented | Complete |
 | Demo video showing the working project | Script exists but the video has not been recorded | Blocked |
 
@@ -52,8 +52,7 @@ The Day 1 and Day 2 LinkedIn posts satisfy the participation requirement only if
 
 ## Remaining mandatory submission blockers
 
-1. Create and publish the source repository with visible commit history.
-2. Record the working demo video.
+1. Record the working demo video.
 
 ## Remaining win-readiness work
 
