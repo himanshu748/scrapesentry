@@ -27,7 +27,7 @@ Data under interrogation. Structured rows physically pass through a contract sca
 
 ## Page silhouette
 
-An asymmetric editorial hero is dominated by a horizontal scanner. A split receipt exposes the difference between HTTP and data success. One continuous recovery mechanism spans the full page, followed by a diagonal evidence ledger, a dark MCP command surface and the real operating console.
+An asymmetric editorial hero is dominated by a horizontal scanner. A split receipt exposes the difference between HTTP and data success. One continuous recovery mechanism spans the full page, followed by a practical adoption path, a diagonal evidence ledger, a dark MCP command surface and the real operating console.
 
 ## Type strategy
 
@@ -57,7 +57,9 @@ The emotional target is controlled urgency. Anime.js owns the scanner timeline a
 
 ## Responsive model
 
-The hero keeps the argument first and turns the horizontal scanner into a vertical gate at narrow widths. The HTTP receipt split becomes a stacked comparison with the contract tear preserved. The recovery rail becomes a vertical guarded path, not five stacked cards. Controls stay at least 44px and all landing interactions remain keyboard accessible.
+The hero keeps the argument first. Verified output remains left of the contract gate while incoming rows remain right at tablet, laptop and desktop widths. At narrow phone widths the scanner becomes a vertical source-to-output gate. The HTTP receipt split becomes a stacked comparison with the contract tear preserved. The recovery rail becomes a vertical guarded path, not five stacked cards. Controls stay at least 44px and all landing interactions remain keyboard accessible.
+
+The adoption section gives visitors two honest paths: evaluate the complete credit-safe hosted recovery or connect an existing collector through the server-side production adapter and MCP. Public credentials never enter browser code.
 
 ## Interaction contract
 
@@ -71,7 +73,7 @@ The accepted production specification is dashboard/design/landing-v2-hero-concep
 - Hero: editorial copy on the left, open data rails on the right and a physical metal contract gate centered between verified and incoming rows
 - Hero copy: “Scrapers fail silently. ScrapeSentry does not.” followed by the supplied data-drift sentence
 - Hero actions: “Watch it recover” then “Open live console”
-- Header: ScrapeSentry, Product, Recovery, MCP and one compact console action
+- Header: ScrapeSentry, Product, Recovery, Use it, MCP and one compact console action
 - Failure story: “Data under interrogation” and “A 200 response can still be a data failure.”
 - Failure media: two torn paper receipts, HTTP success on the left and a cracked failed data contract on the right
 - Recovery: one continuous white pipeline with five physical gates, a failed record, a verified record and a coral quarantine evidence tray

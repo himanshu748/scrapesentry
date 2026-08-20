@@ -12,6 +12,7 @@ import {
   SiteFooter,
   SiteHeader,
   TaglineReveal,
+  UseItSection,
   WorkflowSection
 } from "./components/NarrativeLanding";
 import { FleetCommand } from "./components/FleetCommand";
@@ -189,6 +190,7 @@ export default function Home() {
           <RecoveryStory />
           <WorkflowSection />
           <TaglineReveal />
+          <UseItSection />
           <EvidenceSection evidence={evidence} />
           <section className="console-shell" id="console" aria-labelledby="console-loading-title">
             <ConsoleIntro />
@@ -325,6 +327,7 @@ export default function Home() {
       <RecoveryStory />
       <WorkflowSection />
       <TaglineReveal />
+      <UseItSection />
       <EvidenceSection evidence={evidence} />
 
       <section className="console-shell" id="console" aria-labelledby="console-title">

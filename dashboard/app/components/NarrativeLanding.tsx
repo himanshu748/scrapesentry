@@ -97,6 +97,7 @@ export function SiteHeader() {
       <nav className="desktop-nav" aria-label="Primary navigation">
         <a href="#product">Product</a>
         <a href="#how-it-works">Recovery</a>
+        <a href="#use-it">Use it</a>
         <a href="#mcp">MCP</a>
       </nav>
       <div className="site-actions">
@@ -108,6 +109,7 @@ export function SiteHeader() {
           <nav aria-label="Mobile navigation">
             <a href="#product">Product</a>
             <a href="#how-it-works">Recovery</a>
+            <a href="#use-it">Use it</a>
             <a href="#mcp">MCP</a>
             <a href="#console">Open live console</a>
           </nav>
@@ -440,6 +442,79 @@ export function TaglineReveal() {
         ))}
       </h2>
       <p>The newest scrape earns its way into production. Until it passes, consumers keep receiving the last verified snapshot.</p>
+    </section>
+  );
+}
+
+const MCP_CONFIG = `{
+  "mcpServers": {
+    "scrapesentry": {
+      "command": "python",
+      "args": ["-m", "app.server"]
+    }
+  }
+}`;
+
+export function UseItSection() {
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "selected">("idle");
+
+  async function copyConfig() {
+    try {
+      await navigator.clipboard.writeText(MCP_CONFIG);
+      setCopyState("copied");
+    } catch {
+      const config = document.getElementById("mcp-client-config");
+      const selection = window.getSelection();
+      if (config && selection) {
+        const range = document.createRange();
+        range.selectNodeContents(config);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        setCopyState("selected");
+      }
+    }
+    window.setTimeout(() => setCopyState("idle"), 5000);
+  }
+
+  return (
+    <section className="adoption-section" id="use-it" aria-labelledby="adoption-title">
+      <div className="adoption-heading">
+        <span className="section-index">From demo to daily workflow</span>
+        <h2 id="adoption-title">Bring one collector. Leave with a protected data product.</h2>
+        <p>ScrapeSentry wraps the Bright Data collector you already run. It does not replace your scraper or expose its credentials in the browser.</p>
+        <div className="adoption-actions">
+          <a className="primary-cta" href="#console">Try the hosted recovery <ArrowRight size={17} weight="bold" /></a>
+          <a className="secondary-cta" href="https://github.com/himanshu748/scrapesentry" target="_blank" rel="noreferrer">Get the source</a>
+        </div>
+      </div>
+
+      <div className="adoption-lanes">
+        <article className="adoption-lane adoption-demo-lane">
+          <span>01 · Evaluate it here</span>
+          <h3>Run the complete recovery without spending provider credits.</h3>
+          <ol>
+            <li><b>Break</b><small>Simulate selector drift against recorded production rows.</small></li>
+            <li><b>Approve</b><small>Inspect the candidate and record the human decision.</small></li>
+            <li><b>Verify</b><small>Pass canary and production gates before release.</small></li>
+          </ol>
+          <p><ShieldCheck size={16} weight="fill" /> Interactive hosted workflow · recorded Bright Data evidence</p>
+        </article>
+
+        <article className="adoption-lane adoption-live-lane">
+          <span>02 · Connect your collector</span>
+          <h3>Run the same policy engine from your coding agent.</h3>
+          <ol>
+            <li><b>Configure</b><small>Set the collector ID and Bright Data token on the server.</small></li>
+            <li><b>Contract</b><small>Register the fields, types and quality thresholds that must hold.</small></li>
+            <li><b>Connect</b><small>Start the MCP server and add it to Codex, Claude Code or Cursor.</small></li>
+          </ol>
+          <div className="adoption-code-head">
+            <span>MCP client config</span>
+            <button type="button" onClick={copyConfig}>{copyState === "idle" ? <TerminalWindow size={14} /> : <CheckCircle size={14} weight="fill" />} {copyState === "copied" ? "Copied" : copyState === "selected" ? "Selected, press Ctrl+C" : "Copy config"}</button>
+          </div>
+          <pre id="mcp-client-config" tabIndex={0}><code>{MCP_CONFIG}</code></pre>
+        </article>
+      </div>
     </section>
   );
 }
