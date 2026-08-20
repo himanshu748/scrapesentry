@@ -28,7 +28,7 @@ ScrapeSentry treats every scraper output as a versioned data product with an exe
 5. Require explicit human approval for production release.
 6. Run canary and fresh production checks before declaring recovery.
 
-The FastAPI dashboard and 15-tool MCP server use the same typed policy engine, so operators and coding agents cannot bypass the safety gates.
+The FastAPI dashboard and 18-tool MCP server use the same typed policy engine, so operators and coding agents cannot bypass the safety gates.
 
 ## Verified Bright Data use
 
@@ -62,10 +62,11 @@ Most scraper tools focus on extraction or automatic selector repair. ScrapeSentr
 - Optional Supabase audit persistence
 - GitHub Actions CI plus an opt-in daily live collector contract check
 - Render Blueprint for a two-service public deployment
+- Server-only operator proxy with mutation authentication, rate limiting and request IDs
 
 ## Reliability proof
 
-- 26 automated Python tests cover contracts, provider parsing, state transitions, idempotency, monitoring and API behavior.
+- 37 automated Python tests cover contracts, provider parsing, state transitions, idempotency, monitoring, authentication, alert routing and API behavior.
 - TypeScript validation and the Next.js production build pass.
 - GitHub Actions CI is public and green on `main`.
 - The demo runs through baseline, break, quarantine, repair, approval, canary and production release without page reloads.

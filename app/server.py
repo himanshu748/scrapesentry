@@ -4,7 +4,8 @@ from typing import Any, Dict, List
 
 from mcp.server.fastmcp import FastMCP
 
-from app.models import Collector, DataContract, PolicyMode
+from app.models import Collector, CollectorEnvironment, DataContract, HealthStatus, PolicyMode
+from app.readiness import build_system_readiness
 from app.runtime import get_runtime
 
 mcp = FastMCP("ScrapeSentry")
@@ -51,6 +52,34 @@ def set_data_contract(collector_id: str, contract: Dict[str, Any]) -> Dict[str, 
 def list_collectors() -> List[Dict[str, Any]]:
     """List collector health, policy and contract versions."""
     return _json(get_runtime().service.list_collectors())
+
+
+@mcp.tool()
+def get_fleet_health(
+    status: str | None = None,
+    environment: str | None = None,
+    owner: str | None = None,
+) -> Dict[str, Any]:
+    """Summarize fleet health, open incidents, protected rows and failure budget."""
+    return _json(
+        get_runtime().service.get_fleet_health(
+            HealthStatus(status) if status else None,
+            CollectorEnvironment(environment) if environment else None,
+            owner,
+        )
+    )
+
+
+@mcp.tool()
+def get_alert_status() -> Dict[str, Any]:
+    """Return signed webhook routing configuration and delivery health."""
+    return _json(get_runtime().alert_router.status())
+
+
+@mcp.tool()
+def get_system_readiness() -> Dict[str, Any]:
+    """Report judge readiness, production readiness and missing configuration."""
+    return _json(build_system_readiness(get_runtime()))
 
 
 @mcp.tool()

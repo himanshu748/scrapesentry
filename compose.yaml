@@ -17,8 +17,8 @@ services:
   dashboard:
     build:
       context: ./dashboard
-      args:
-        NEXT_PUBLIC_API_URL: http://localhost:8000
+    environment:
+      API_SERVER_URL: http://api:8000
     depends_on:
       api:
         condition: service_healthy

@@ -3,9 +3,9 @@ import pytest
 from app.brightdata_client import DemoBrightDataAdapter
 from app.errors import DomainError
 from app.heal_orchestrator import ScrapeSentryService
-from app.models import HealthStatus, RepairState
+from app.models import CollectorEnvironment, HealthStatus, RepairState
 from app.runtime import Runtime
-from app.seed import DEMO_COLLECTOR_ID
+from app.seed import DEMO_COLLECTOR_ID, demo_collector
 from app.settings import Settings
 
 
@@ -40,6 +40,29 @@ def test_approval_gated_recovery(runtime):
     assert final.collector.status == HealthStatus.GREEN
     assert final.collector.active_incident_id is None
     assert final.last_known_good.run_id != initial.last_known_good.run_id
+
+
+def test_new_drift_cycle_breaks_after_a_completed_recovery(runtime):
+    service = runtime.service
+    service.set_demo_layout(DEMO_COLLECTOR_ID, "broken")
+    service.check_health(DEMO_COLLECTOR_ID, "first-cycle-broken")
+    repair = service.propose_heal(DEMO_COLLECTOR_ID, "first-cycle-heal")
+    service.approve_heal(DEMO_COLLECTOR_ID, repair.id)
+    service.verify_recovery(DEMO_COLLECTOR_ID, "first-cycle-verify")
+
+    assert runtime.adapter.candidate_active is True
+
+    service.set_demo_layout(DEMO_COLLECTOR_ID, "broken")
+    second_cycle = service.check_health(DEMO_COLLECTOR_ID, "second-cycle-broken")
+
+    assert runtime.adapter.candidate_active is False
+    assert second_cycle.quarantined is True
+    assert second_cycle.evaluation.status == HealthStatus.RED
+
+    second_repair = service.propose_heal(DEMO_COLLECTOR_ID, "second-cycle-heal")
+
+    assert second_repair.id != repair.id
+    assert second_repair.state == RepairState.AWAITING_APPROVAL
 
 
 def test_commands_are_idempotent(runtime):
@@ -115,6 +138,41 @@ def test_provider_collection_id_is_attached_to_the_health_run(runtime):
     run = runtime.service.check_health(DEMO_COLLECTOR_ID, "provider-job-link")
 
     assert run.provider_job_id == "j_provider_123"
+
+
+def test_fleet_health_aggregates_real_registered_collector_state(runtime):
+    service = runtime.service
+    second = demo_collector("c_second_provider")
+    second.id = "second-collector"
+    second.name = "Second storefront"
+    second.owner = "growth-data"
+    second.environment = CollectorEnvironment.STAGING
+    second.failure_budget_minutes = 30
+    service.register_collector(second)
+    service.check_health(
+        second.id,
+        "second-broken",
+        snapshot=runtime.adapter._read("broken"),
+    )
+
+    fleet = service.get_fleet_health()
+
+    assert fleet.total_collectors == 2
+    assert fleet.matching_collectors == 2
+    assert fleet.healthy == 1
+    assert fleet.broken == 1
+    assert fleet.active_incidents == 1
+    assert fleet.protected_records == 12
+    assert fleet.failure_budget_seconds == 5400
+    assert [item.id for item in fleet.collectors] == [second.id, DEMO_COLLECTOR_ID]
+
+    filtered = service.get_fleet_health(
+        environment=CollectorEnvironment.STAGING,
+        owner="GROWTH-DATA",
+    )
+    assert filtered.total_collectors == 2
+    assert filtered.matching_collectors == 1
+    assert filtered.collectors[0].id == second.id
 
 
 def test_repair_records_provider_job_evidence_and_latency(runtime):

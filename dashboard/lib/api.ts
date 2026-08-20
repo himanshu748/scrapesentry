@@ -126,17 +126,86 @@ export type MonitorStatus = {
   last_error?: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+export type FleetCollector = {
+  id: string;
+  name: string;
+  brightdata_collector_id: string;
+  owner: string;
+  environment: "development" | "staging" | "production";
+  policy_mode: string;
+  status: Health;
+  health_score: number;
+  contract_version: number;
+  last_run_at?: string;
+  active_incident_id?: string;
+  incident_open_seconds: number;
+  protected_records: number;
+};
+
+export type FleetSummary = {
+  generated_at: string;
+  total_collectors: number;
+  matching_collectors: number;
+  healthy: number;
+  degraded: number;
+  broken: number;
+  active_incidents: number;
+  average_health_score: number;
+  protected_records: number;
+  failure_budget_seconds: number;
+  incident_seconds: number;
+  failure_budget_remaining_seconds: number;
+  failure_budget_state: "healthy" | "at_risk" | "exhausted";
+  collectors: FleetCollector[];
+};
+
+export type AlertStatus = {
+  configured: boolean;
+  destination?: string;
+  event_kinds: string[];
+  deliveries_attempted: number;
+  deliveries_succeeded: number;
+  deliveries_failed: number;
+  configuration_error?: string;
+  last_delivery?: {
+    event_id: string;
+    collector_id: string;
+    kind: string;
+    destination?: string;
+    status: "delivered" | "failed";
+    attempted_at: string;
+    response_code?: number;
+    error?: string;
+  };
+};
+
+export type ReadinessCheck = {
+  id: string;
+  label: string;
+  status: "ready" | "optional" | "missing";
+  detail: string;
+};
+
+export type SystemReadiness = {
+  mode: string;
+  status: "judge_ready" | "production_ready" | "needs_configuration";
+  judge_ready: boolean;
+  production_ready: boolean;
+  checks: ReadinessCheck[];
+  blockers: string[];
+};
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(path, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
     cache: "no-store"
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.error?.message || `Request failed with ${response.status}`);
+    const message = payload?.error?.message || `Request failed with ${response.status}`;
+    const requestId = payload?.request_id || response.headers.get("x-request-id");
+    throw new Error(`${message}${requestId ? ` · ${requestId}` : ""}`);
   }
   return payload as T;
 }

@@ -58,6 +58,9 @@ def demo_collector(
         name="Books to Scrape catalog",
         brightdata_collector_id=brightdata_collector_id,
         inputs=[{"url": "https://books.toscrape.com/"}],
+        owner="data-platform",
+        environment="production",
+        failure_budget_minutes=60,
         policy_mode=PolicyMode.PROPOSE,
         contract=demo_contract(),
     )

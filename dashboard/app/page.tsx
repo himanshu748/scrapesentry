@@ -1,9 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DashboardState, LiveRunEvidence, MonitorStatus, Repair, SafeOutput, request } from "../lib/api";
+import { AlertStatus, DashboardState, FleetSummary, LiveRunEvidence, MonitorStatus, Repair, SafeOutput, SystemReadiness, request } from "../lib/api";
+import {
+  ConsoleIntro,
+  EvidenceSection,
+  FAQSection,
+  FinalCallToAction,
+  LandingHero,
+  RecoveryStory,
+  SiteFooter,
+  SiteHeader,
+  TaglineReveal,
+  WorkflowSection
+} from "./components/NarrativeLanding";
+import { FleetCommand } from "./components/FleetCommand";
+import { ReadinessPanel } from "./components/ReadinessPanel";
 
-const COLLECTOR_ID = "books-to-scrape";
+const DEFAULT_COLLECTOR_ID = "books-to-scrape";
 
 function relativeTime(value?: string) {
   if (!value) return "Never";
@@ -42,19 +56,34 @@ export default function Home() {
   const [evidence, setEvidence] = useState<LiveRunEvidence>();
   const [safeOutput, setSafeOutput] = useState<SafeOutput>();
   const [monitor, setMonitor] = useState<MonitorStatus>();
+  const [fleet, setFleet] = useState<FleetSummary>();
+  const [alerts, setAlerts] = useState<AlertStatus>();
+  const [readiness, setReadiness] = useState<SystemReadiness>();
+  const [selectedCollectorId, setSelectedCollectorId] = useState(DEFAULT_COLLECTOR_ID);
   const [busy, setBusy] = useState<string>();
   const [error, setError] = useState<string>();
 
   const refresh = useCallback(async () => {
-    const [next, nextSafeOutput, nextMonitor] = await Promise.all([
-      request<DashboardState>(`/api/collectors/${COLLECTOR_ID}/dashboard`),
-      request<SafeOutput>(`/api/collectors/${COLLECTOR_ID}/safe-output`).catch(() => undefined),
-      request<MonitorStatus>("/api/monitor")
+    const nextFleet = await request<FleetSummary>("/api/fleet");
+    const resolvedCollectorId = nextFleet.collectors.some((item) => item.id === selectedCollectorId)
+      ? selectedCollectorId
+      : nextFleet.collectors[0]?.id;
+    if (!resolvedCollectorId) throw new Error("No collectors are registered yet.");
+    const [next, nextSafeOutput, nextMonitor, nextAlerts, nextReadiness] = await Promise.all([
+      request<DashboardState>(`/api/collectors/${resolvedCollectorId}/dashboard`),
+      request<SafeOutput>(`/api/collectors/${resolvedCollectorId}/safe-output`).catch(() => undefined),
+      request<MonitorStatus>("/api/monitor"),
+      request<AlertStatus>("/api/alerts"),
+      request<SystemReadiness>("/api/readiness")
     ]);
+    setFleet(nextFleet);
+    if (resolvedCollectorId !== selectedCollectorId) setSelectedCollectorId(resolvedCollectorId);
     setState(next);
     setSafeOutput(nextSafeOutput);
     setMonitor(nextMonitor);
-  }, []);
+    setAlerts(nextAlerts);
+    setReadiness(nextReadiness);
+  }, [selectedCollectorId]);
 
   useEffect(() => {
     Promise.all([
@@ -84,7 +113,7 @@ export default function Home() {
     const liveCheck = {
       text: state.latest_run ? "Run live health check" : "Start live health check",
       name: "check",
-      run: () => request(`/api/collectors/${COLLECTOR_ID}/check`, {
+      run: () => request(`/api/collectors/${selectedCollectorId}/check`, {
         method: "POST",
         body: JSON.stringify({ idempotency_key: idempotency("live-check") })
       })
@@ -94,7 +123,7 @@ export default function Home() {
       return {
         text: "Approve repair",
         name: "approve",
-        run: () => request<Repair>(`/api/collectors/${COLLECTOR_ID}/repairs/approve`, {
+        run: () => request<Repair>(`/api/collectors/${selectedCollectorId}/repairs/approve`, {
           method: "POST",
           body: JSON.stringify({ repair_id: repair.id })
         })
@@ -108,7 +137,7 @@ export default function Home() {
         return {
           text: "Confirm draft published",
           name: "publish",
-          run: () => request<Repair>(`/api/collectors/${COLLECTOR_ID}/repairs/provider-published`, {
+          run: () => request<Repair>(`/api/collectors/${selectedCollectorId}/repairs/provider-published`, {
             method: "POST",
             body: JSON.stringify({ repair_id: repair.id })
           })
@@ -117,7 +146,7 @@ export default function Home() {
       return {
         text: "Run guarded verification",
         name: "verify",
-        run: () => request<Repair>(`/api/collectors/${COLLECTOR_ID}/repairs/verify`, {
+        run: () => request<Repair>(`/api/collectors/${selectedCollectorId}/repairs/verify`, {
           method: "POST",
           body: JSON.stringify({ idempotency_key: idempotency("verify") })
         })
@@ -125,18 +154,18 @@ export default function Home() {
     }
     if (
       broken &&
-      (!repair || ["rejected", "failed", "rolled_back"].includes(repair.state))
+      (!repair || ["rejected", "failed", "rolled_back", "recovered"].includes(repair.state))
     ) {
       return {
         text: "Generate repair",
         name: "repair",
-        run: () => request<Repair>(`/api/collectors/${COLLECTOR_ID}/repairs`, {
+        run: () => request<Repair>(`/api/collectors/${selectedCollectorId}/repairs`, {
           method: "POST",
           body: JSON.stringify({ idempotency_key: idempotency("heal") })
         })
       };
     }
-    if (state.demo_layout === "live") return liveCheck;
+    if (state.demo_layout === "live" || selectedCollectorId !== DEFAULT_COLLECTOR_ID) return liveCheck;
     return {
       text: "Simulate selector drift",
       name: "drift",
@@ -148,15 +177,35 @@ export default function Home() {
         return request<MonitorStatus>("/api/monitor/run", { method: "POST" });
       }
     };
-  }, [broken, repair, state]);
+  }, [broken, repair, selectedCollectorId, state]);
 
   if (!state) {
     return (
-      <main className="loading-shell">
-        <div className="brand-mark">S</div>
-        <p>{error || "Connecting to the control plane..."}</p>
-        {error && <button onClick={() => refresh().catch(() => undefined)}>Retry</button>}
-      </main>
+      <>
+        <a className="skip-link" href="#main-content">Skip to main content</a>
+        <SiteHeader />
+        <main id="main-content">
+          <LandingHero />
+          <RecoveryStory />
+          <WorkflowSection />
+          <TaglineReveal />
+          <EvidenceSection evidence={evidence} />
+          <section className="console-shell" id="console" aria-labelledby="console-loading-title">
+            <ConsoleIntro />
+            <div className="console-loading">
+              <span className="console-loading-mark">S</span>
+              <div>
+                <strong id="console-loading-title">Connecting to the control plane</strong>
+                <p>{error || "Waking the live recovery engine and loading the latest protected state."}</p>
+              </div>
+              {error && <button onClick={() => refresh().catch(() => undefined)}>Retry connection</button>}
+            </div>
+          </section>
+          <FAQSection />
+          <FinalCallToAction />
+          <SiteFooter />
+        </main>
+      </>
     );
   }
 
@@ -206,7 +255,7 @@ export default function Home() {
       tool: "propose_heal",
       args: "policy=\"propose\"",
       complete: Boolean(repair),
-      result: repair ? `${repair.confidence}% confidence · schema ${repair.schema_changed ? "changed" : "preserved"}` : "Approval-gated by policy"
+      result: repair ? `${repair.confidence}% confidence · schema ${repair.schema_changed ? "changed" : "preserved"}` : "Approval required by policy"
     },
     {
       tool: "approve_heal",
@@ -248,7 +297,7 @@ export default function Home() {
     },
     {
       number: "03",
-      title: "Self-heal",
+      title: "Self healing",
       detail: repair ? `${repair.confidence}% confidence · schema ${repair.schema_changed ? "changed" : "preserved"}` : "Bright Data repair handoff",
       complete: Boolean(repair)
     },
@@ -268,7 +317,18 @@ export default function Home() {
   const activeRecoveryStage = recoveryStages.findIndex((stage) => !stage.complete);
 
   return (
-    <main>
+    <>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <SiteHeader />
+      <main id="main-content">
+      <LandingHero />
+      <RecoveryStory />
+      <WorkflowSection />
+      <TaglineReveal />
+      <EvidenceSection evidence={evidence} />
+
+      <section className="console-shell" id="console" aria-labelledby="console-title">
+      <ConsoleIntro />
       <header className="topbar">
         <div className="brand">
           <div className="brand-mark">S</div>
@@ -282,11 +342,11 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="hero">
+      <section className="product-command">
         <div>
-          <div className="eyebrow">Fleet / {c.name}</div>
-          <h1>Know when your scraper lies.</h1>
-          <p>Contract-aware monitoring catches silent data drift, quarantines bad snapshots and verifies repairs before they reach production.</p>
+          <span>Fleet / {c.name}</span>
+          <h3 id="console-title">Know when your scraper lies.</h3>
+          <p>Run the real contract monitor, inspect evidence and move the incident through guarded recovery.</p>
         </div>
         <button className="primary-button" disabled={Boolean(busy)} onClick={() => primary && act(primary.name, primary.run)}>
           {busy === primary?.name ? "Working..." : primary?.text}
@@ -294,12 +354,21 @@ export default function Home() {
         </button>
       </section>
 
-      {error && <div className="error-banner"><strong>Action blocked</strong><span>{error}</span><button onClick={() => setError(undefined)}>×</button></div>}
+      {error && <div className="error-banner" role="alert"><strong>Action blocked</strong><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError(undefined)}>×</button></div>}
 
-      <section className="recovery-flight" aria-label="Self-healing recovery flight recorder">
+      <FleetCommand
+        fleet={fleet}
+        alerts={alerts}
+        selectedCollectorId={selectedCollectorId}
+        onSelect={setSelectedCollectorId}
+      />
+
+      <ReadinessPanel readiness={readiness} />
+
+      <section className="recovery-flight" aria-label="Self healing recovery flight recorder">
         <div className="flight-heading">
           <div>
-            <span className="section-kicker">Judge mode · recovery flight recorder</span>
+            <span className="section-kicker">Recovery flight recorder</span>
             <h2>One Collector ID. One visible break. Zero poisoned rows.</h2>
           </div>
           <div className="flight-identity">
@@ -320,7 +389,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="metrics-grid">
+      <section className="metrics-grid" aria-label="Live incident metrics" tabIndex={0}>
         <article className="metric-card health-card">
           <div className="metric-label">Fleet health</div>
           <div className="score-row">
@@ -352,7 +421,7 @@ export default function Home() {
               <span className="section-kicker">Protected downstream feed</span>
               <span className="safe-feed-chip"><i />{safeOutput.stale ? "Fallback active" : "Verified live"}</span>
             </div>
-            <h2>{safeOutput.stale ? "Bad rows stopped here. Consumers stay clean." : "Only contract-valid data reaches consumers."}</h2>
+            <h2>{safeOutput.stale ? "Bad rows stopped here. Consumers stay clean." : "Only contract valid data reaches consumers."}</h2>
             <p>{safeOutput.warning || "The newest snapshot passed every blocking contract and is safe to serve."}</p>
             <div className="safe-feed-meta">
               <span>Serving <code>{safeOutput.run_id}</code></span>
@@ -386,52 +455,10 @@ export default function Home() {
         </section>
       )}
 
-      {evidence && (
-        <section className="live-proof" aria-label="Bright Data production run evidence">
-          <div className="live-proof-copy">
-            <div className="proof-heading">
-              <span className="section-kicker">Live Bright Data proof</span>
-              <span className="verified-chip"><i /> Verified production run</span>
-            </div>
-            <h2>{evidence.records} real records. Zero failed crawls.</h2>
-            <p>
-              Scraper Studio collected <a href={evidence.target_url} target="_blank" rel="noreferrer">books.toscrape.com</a> with the exact contract enforced below. The dashboard replays a controlled break against this captured production output.
-            </p>
-            <div className="run-identity">
-              <span>Collector <code>{evidence.collector_id}</code></span>
-              <span>Run <code>{evidence.job_id}</code></span>
-              <span>SHA-256 <code>{evidence.artifact_sha256.slice(0, 12)}…</code></span>
-            </div>
-            <div className="schema-list">
-              {evidence.schema_fields.map((field) => <code key={field}>{field}</code>)}
-            </div>
-          </div>
-          <div className="proof-stats">
-            <div><span>Success</span><strong>{evidence.success_rate.toFixed(0)}%</strong></div>
-            <div><span>Pages</span><strong>{evidence.pages}/{evidence.pages}</strong></div>
-            <div><span>Runtime</span><strong>{(evidence.job_time_ms / 1000).toFixed(1)}s</strong></div>
-            <div><span>Spent</span><strong>${evidence.spent_usd.toFixed(0)}</strong></div>
-          </div>
-          <div className="self-heal-proof">
-            <div className="self-heal-proof-heading">
-              <span>Actual Self-Healing job</span>
-              <b><i />{evidence.repair_status}</b>
-            </div>
-            <code>{evidence.repair_job_id}</code>
-            <div className="self-heal-proof-stats">
-              <span><small>AI steps</small><strong>{evidence.repair_completed_steps}</strong></span>
-              <span><small>Preview rows</small><strong>{evidence.repair_preview_records}</strong></span>
-              <span><small>Elapsed</small><strong>{evidence.repair_elapsed_seconds.toFixed(1)}s</strong></span>
-            </div>
-            <p>After explicit approval, Bright Data published production Version 2. The API run shown here then passed the full contract at 100/100.</p>
-          </div>
-        </section>
-      )}
-
       <section className="workspace-grid">
         <article className="panel incident-panel">
           <div className="panel-heading">
-            <div><span className="section-kicker">01 / Detect</span><h2>Incident evidence</h2></div>
+            <div><span className="section-kicker">Detect</span><h2>Incident evidence</h2></div>
             {c.active_incident_id ? <span className="incident-id">{c.active_incident_id}</span> : <span className="quiet-chip">No active incident</span>}
           </div>
           {violations.length ? (
@@ -454,7 +481,7 @@ export default function Home() {
 
         <article className="panel repair-panel">
           <div className="panel-heading">
-            <div><span className="section-kicker">02 / Repair</span><h2>Guarded recovery</h2></div>
+            <div><span className="section-kicker">Repair</span><h2>Guarded recovery</h2></div>
             {repair && <span className={`state-chip ${repair.state}`}>{label(repair.state)}</span>}
           </div>
           {repair ? (
@@ -470,7 +497,7 @@ export default function Home() {
                   <div className="provider-evidence-heading">
                     <div>
                       <span>Provider repair evidence</span>
-                      <strong>{repair.provider_evidence.requires_publish ? "Bright Data Self-Healing" : "Recorded demo adapter"}</strong>
+                      <strong>{repair.provider_evidence.requires_publish ? "Bright Data Self Healing" : "Recorded recovery adapter"}</strong>
                     </div>
                     <b>{label(repair.provider_evidence.progress_status)}</b>
                   </div>
@@ -485,7 +512,7 @@ export default function Home() {
                       ? repair.provider_evidence.draft_status === "published"
                         ? "The reviewed Scraper Studio draft is published and cleared for guarded verification."
                         : "Review and publish the development draft in Scraper Studio. Production verification stays blocked until confirmation."
-                      : "Deterministic replay evidence for the judge demo. Live mode requires a reviewed Scraper Studio publish before verification."}
+                      : "Recorded recovery evidence keeps this workflow credit safe. Live mode requires a reviewed Scraper Studio publish before verification."}
                   </p>
                 </div>
               )}
@@ -500,7 +527,7 @@ export default function Home() {
               <div className="gate-row">
                 <span><i className={repair.state === "awaiting_approval" ? "pulse" : ""} /> Approval gate</span>
                 {repair.state === "awaiting_approval" ? (
-                  <div className="gate-actions"><button disabled={Boolean(busy)} onClick={() => act("reject", () => request(`/api/collectors/${COLLECTOR_ID}/repairs/reject`, { method: "POST", body: JSON.stringify({ reason: "Rejected in dashboard review" }) }))}>Reject</button><strong>Human decision required</strong></div>
+                  <div className="gate-actions"><button disabled={Boolean(busy)} onClick={() => act("reject", () => request(`/api/collectors/${selectedCollectorId}/repairs/reject`, { method: "POST", body: JSON.stringify({ reason: "Rejected in dashboard review" }) }))}>Reject</button><strong>Human decision required</strong></div>
                 ) : <strong>{label(repair.state)}</strong>}
               </div>
             </>
@@ -512,7 +539,7 @@ export default function Home() {
 
       <section className="lower-grid">
         <article className="panel canary-panel">
-          <div className="panel-heading"><div><span className="section-kicker">03 / Verify</span><h2>Release gates</h2></div></div>
+          <div className="panel-heading"><div><span className="section-kicker">Verify</span><h2>Release gates</h2></div></div>
           <div className="gate-stack">
             <div className={repair ? "complete" : ""}><span>1</span><p><strong>Candidate preview</strong><small>Contract tested against repaired rows</small></p><b>{repair ? "Passed" : "Waiting"}</b></div>
             <div className={repair && ["approved", "shadow_verifying", "production_verifying", "recovered"].includes(repair.state) ? "complete" : ""}><span>2</span><p><strong>Human approval</strong><small>Schema and selector changes reviewed</small></p><b>{repair?.state === "awaiting_approval" ? "Required" : repair ? "Passed" : "Waiting"}</b></div>
@@ -534,10 +561,12 @@ export default function Home() {
         </article>
       </section>
 
-      <section className="mcp-workflow" aria-label="MCP agent workflow">
+      </section>
+
+      <section className="mcp-workflow" id="mcp" aria-label="MCP agent workflow">
         <div className="mcp-heading">
           <div><span className="section-kicker">Agent-native operations</span><h2>The incident can be resolved without leaving the coding agent.</h2></div>
-          <span className="mcp-count">15 MCP tools</span>
+          <span className="mcp-count">18 MCP tools</span>
         </div>
         <div className="mcp-grid">
           <div className="mcp-terminal">
@@ -556,13 +585,17 @@ export default function Home() {
           <div className="mcp-principles">
             <div><span>01</span><p><strong>One policy engine</strong><small>The dashboard and MCP server call the same typed service layer.</small></p></div>
             <div><span>02</span><p><strong>Safe by default</strong><small>Bad snapshots are quarantined while last known good data stays available.</small></p></div>
-            <div><span>03</span><p><strong>Human control</strong><small>Schema changes never auto-approve and every decision enters the audit timeline.</small></p></div>
+            <div><span>03</span><p><strong>Human control</strong><small>Schema changes never receive automatic approval and every decision enters the audit timeline.</small></p></div>
             <div><span>04</span><p><strong>Verified recovery</strong><small>Canary and production contracts must pass before the incident closes.</small></p></div>
           </div>
         </div>
       </section>
 
-      <footer><span>ScrapeSentry</span><p>Powered by Bright Data Scraper Studio + Self-Healing</p><code>{c.brightdata_collector_id}</code></footer>
-    </main>
+      <FAQSection />
+      <FinalCallToAction />
+
+      <SiteFooter collectorId={c.brightdata_collector_id} />
+      </main>
+    </>
   );
 }

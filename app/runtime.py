@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from app.alerts import WebhookAlertRouter
 from app.brightdata_client import DemoBrightDataAdapter, HttpBrightDataAdapter
 from app.heal_orchestrator import ScrapeSentryService
 from app.monitor import CollectorMonitor
@@ -15,7 +16,8 @@ class Runtime:
         self.settings = settings
         self.repository = self._build_repository()
         self.adapter = self._build_adapter()
-        self.service = ScrapeSentryService(self.repository, self.adapter)
+        self.alert_router = self._build_alert_router()
+        self.service = ScrapeSentryService(self.repository, self.adapter, self.alert_router)
         self.monitor = CollectorMonitor(
             self.service, interval_seconds=self.settings.monitor_interval_seconds
         )
@@ -40,6 +42,12 @@ class Runtime:
             )
         return HttpBrightDataAdapter(self.settings)
 
+    def _build_alert_router(self) -> WebhookAlertRouter:
+        return WebhookAlertRouter(
+            self.settings.alert_webhook_url,
+            self.settings.alert_webhook_secret,
+        )
+
     def seed(self) -> None:
         self.service.register_collector(demo_collector(self.settings.brightdata_collector_id))
         self.service.check_health(DEMO_COLLECTOR_ID, "seed-healthy", source="demo")
@@ -53,7 +61,8 @@ class Runtime:
     def reset(self) -> None:
         self.repository = self._build_repository()
         self.adapter = self._build_adapter()
-        self.service = ScrapeSentryService(self.repository, self.adapter)
+        self.alert_router = self._build_alert_router()
+        self.service = ScrapeSentryService(self.repository, self.adapter, self.alert_router)
         self.monitor = CollectorMonitor(
             self.service, interval_seconds=self.settings.monitor_interval_seconds
         )

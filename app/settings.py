@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     brightdata_poll_timeout_seconds: int = Field(default=180, ge=10, le=900)
     monitor_enabled: bool = False
     monitor_interval_seconds: int = Field(default=60, ge=10, le=86400)
+    mutation_rate_limit_per_minute: int = Field(default=60, ge=5, le=1000)
+    operator_api_token: str | None = None
+    allowed_hosts: str = "localhost,127.0.0.1,testserver,*.onrender.com"
+    alert_webhook_url: str | None = None
+    alert_webhook_secret: str | None = None
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
     fixture_dir: Path = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
@@ -29,6 +34,10 @@ class Settings(BaseSettings):
     @property
     def parsed_cors_origins(self) -> List[str]:
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
+
+    @property
+    def parsed_allowed_hosts(self) -> List[str]:
+        return [item.strip() for item in self.allowed_hosts.split(",") if item.strip()]
 
 
 @lru_cache

@@ -54,7 +54,7 @@ Point to the green health score, four resolved release gates and recovered timel
 
 Scroll to the MCP execution trace.
 
-Say: "Fifteen MCP tools let a coding agent detect drift, inspect evidence, propose repairs, record the provider publish, verify recovery and serve last known good data. Bad scraper output never silently reaches production."
+Say: "Eighteen MCP tools let a coding agent inspect fleet health and readiness, detect drift, propose repairs, record the provider publish, verify recovery and serve last known good data. Bad scraper output never silently reaches production."
 
 End on the product name and line: "Scrape anything. Ship trustworthy data."
 

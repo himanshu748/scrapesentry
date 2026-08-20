@@ -6,7 +6,7 @@ The local hackathon MVP is built and verified.
 
 ## What works
 
-- FastMCP server with all 13 planned lifecycle tools plus `run_monitor_cycle` and `confirm_provider_publish`
+- FastMCP server with 18 lifecycle, fleet, alert and readiness tools
 - FastAPI dashboard API with structured error envelopes
 - deterministic contract evaluation for structure, quality, semantics and freshness
 - green, yellow and red scoring with evidence samples
@@ -39,17 +39,20 @@ The local hackathon MVP is built and verified.
 - Docker Compose startup with API readiness gating
 - GitHub Actions checks for Ruff, pytest, TypeScript and the Next.js production build
 - Dockerfiles, environment templates and MCP client configs
+- server-only dashboard proxy with production operator authentication
+- request correlation IDs, mutation throttling and explicit judge versus production readiness
 
 ## Verification results
 
-- Backend: 26 tests passed
+- Backend: 39 tests passed
 - Python: Ruff passed
 - Dashboard: TypeScript passed
 - Dashboard: Next.js production build passed
-- MCP: 15 tools registered
+- MCP: 18 tools registered
 - Browser: complete break to repair to approval to recovered flow passed
 - Browser: protected feed changed from verified live to fallback active then back to verified live
 - Browser console: zero errors after the completed flow
+- Responsive browser: desktop and 360 px mobile passed with no horizontal overflow
 - Dependency audit: zero production vulnerabilities
 
 ## Run

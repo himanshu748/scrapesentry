@@ -69,7 +69,8 @@ flowchart LR
     J -->|pass| E
     J -->|fail| K["Keep last known good"]
     B --> L["Supabase audit storage"]
-    M["Next.js dashboard"] --> B
+    M["Browser"] --> N["Next.js server proxy"]
+    N --> B
 ```
 
 The FastAPI and MCP interfaces call the same typed service layer, so browser actions and agent actions enforce identical safety rules.
@@ -79,6 +80,9 @@ The FastAPI and MCP interfaces call the same typed service layer, so browser act
 - `register_collector`
 - `set_data_contract`
 - `list_collectors`
+- `get_fleet_health`
+- `get_alert_status`
+- `get_system_readiness`
 - `check_health`
 - `get_drift_report`
 - `propose_heal`
@@ -106,6 +110,30 @@ MONITOR_INTERVAL_SECONDS=60
 ```
 
 Run a cycle through the API with `POST /api/monitor/run`, inspect it with `GET /api/monitor` or call the `run_monitor_cycle` MCP tool. The dashboard’s **Run monitor** control uses the same monitor path as the background scheduler.
+
+## Signed incident routing
+
+ScrapeSentry can send HMAC-SHA256 signed webhooks when a new incident is quarantined and when guarded recovery is verified. Reconfirmed failures reuse the active incident and do not send duplicate notifications. Delivery failures are isolated from health checks and exposed through `GET /api/alerts` plus the `get_alert_status` MCP tool.
+
+```dotenv
+ALERT_WEBHOOK_URL=https://your-incident-router.example/scrapesentry
+ALERT_WEBHOOK_SECRET=use-a-long-random-secret
+```
+
+Receivers verify `X-ScrapeSentry-Signature` against the exact request body prefixed by `X-ScrapeSentry-Timestamp` and a period. The public judge deployment leaves routing disabled because it has no operator-owned destination.
+
+## Operator boundary and readiness
+
+The browser talks only to the Next.js origin. A server-only route forwards API requests and adds `OPERATOR_API_TOKEN` for private production deployments, so the token never enters a browser bundle or a `NEXT_PUBLIC_*` variable. The FastAPI control plane fails closed when production mutations arrive without the matching bearer token.
+
+State-changing routes share a sliding-window limit to protect provider credits. Every API response includes `X-Request-ID`, structured domain errors return the same ID and the dashboard shows it when an operation fails. Trusted host validation, restrictive forwarding and response hardening are enabled at the server boundary.
+
+`GET /api/readiness` and the `get_system_readiness` MCP tool report two separate outcomes:
+
+- **Judge ready** means the deterministic credit-safe workflow is complete and grounded in recorded production evidence.
+- **Production ready** requires live Bright Data credentials, Supabase persistence, an operator token and `APP_ENV=production`.
+
+The dashboard renders every check and keeps missing production configuration visible. It never labels the public judge deployment as a fully configured private production system.
 
 ## Run locally
 
@@ -138,7 +166,7 @@ The API health check gates dashboard startup, so the judge demo does not open ag
 
 ## Deploy on Render
 
-The included `render.yaml` creates two free web services in one Blueprint: a FastAPI control plane and a Next.js dashboard. Browser requests stay on the dashboard origin, then Next.js forwards API calls to the API service URL that Render injects from `RENDER_EXTERNAL_URL`.
+The included `render.yaml` creates two free web services in one Blueprint: a FastAPI control plane and a Next.js dashboard. Browser requests stay on the dashboard origin, then the server-only Next.js proxy forwards API calls to the `API_SERVER_URL` value that Render derives from `RENDER_EXTERNAL_URL`.
 
 1. Push this repository to GitHub.
 2. In Render, create a new Blueprint from the repository.
@@ -167,7 +195,7 @@ cd dashboard && npm run lint && npm run build
 
 Or run the complete local gate with `make verify`.
 
-The tests cover healthy and broken contracts, cross-field semantics, last known good retention, idempotency, API errors, schema approval and the full recovery lifecycle.
+The tests cover healthy and broken contracts, cross-field semantics, last known good retention, idempotency, API errors, schema approval, mutation authentication, rate limiting, readiness reporting and the full recovery lifecycle.
 
 The GitHub Actions workflow runs Ruff, pytest, TypeScript checks and the Next.js production build on every push and pull request.
 
@@ -181,7 +209,11 @@ Copy `.env.example` to `.env` and set:
 APP_ENV=production
 BRIGHTDATA_API_TOKEN=...
 BRIGHTDATA_COLLECTOR_ID=c_msxcshnz2bwrroekf3
+OPERATOR_API_TOKEN=use-a-long-random-server-only-value
+ALLOWED_HOSTS=localhost,127.0.0.1,your-api.example.com
 ```
+
+Configure the same `OPERATOR_API_TOKEN` on the private Next.js dashboard service. Do not expose it through a `NEXT_PUBLIC_*` variable. Add Supabase credentials before relying on audit history across restarts.
 
 The live adapter follows the documented Collection API flow:
 

@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field
 
-from app.models import Collector, DataContract, PolicyMode
+from app.models import Collector, CollectorEnvironment, DataContract, PolicyMode
 
 
 class IdempotentAction(BaseModel):
@@ -35,6 +35,9 @@ class RegisterCollectorAction(BaseModel):
     name: str
     brightdata_collector_id: str
     inputs: List[Dict[str, Any]] = Field(default_factory=list)
+    owner: str = Field(default="data-platform", min_length=1, max_length=80)
+    environment: CollectorEnvironment = CollectorEnvironment.PRODUCTION
+    failure_budget_minutes: int = Field(default=60, ge=1, le=43200)
     policy_mode: PolicyMode = PolicyMode.PROPOSE
     contract: DataContract
 
@@ -49,3 +52,4 @@ class ErrorBody(BaseModel):
 
 class ErrorEnvelope(BaseModel):
     error: ErrorBody
+    request_id: str | None = None

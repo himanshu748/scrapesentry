@@ -27,7 +27,7 @@ Acceptance proof:
 - Changing the demo layout then running the monitor creates one incident.
 - Running it again reconfirms the same incident.
 - The protected feed keeps serving 12 verified rows.
-- All 26 tests, TypeScript and the production build pass.
+- All 39 tests, TypeScript and the production build pass.
 - A simulated live-adapter boundary test proves verification fails before publish and succeeds after confirmation.
 
 ## Day 4: Fleet mode and alert routing

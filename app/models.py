@@ -36,6 +36,12 @@ class PolicyMode(str, Enum):
     GUARDED_AUTO = "guarded_auto"
 
 
+class CollectorEnvironment(str, Enum):
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+
+
 class RepairState(str, Enum):
     HEAL_PROPOSED = "heal_proposed"
     AWAITING_APPROVAL = "awaiting_approval"
@@ -114,6 +120,9 @@ class Collector(BaseModel):
     name: str
     brightdata_collector_id: str
     inputs: List[Dict[str, Any]] = Field(default_factory=list)
+    owner: str = Field(default="data-platform", min_length=1, max_length=80)
+    environment: CollectorEnvironment = CollectorEnvironment.PRODUCTION
+    failure_budget_minutes: int = Field(default=60, ge=1, le=43200)
     policy_mode: PolicyMode = PolicyMode.PROPOSE
     auto_approve_threshold: int = Field(default=95, ge=0, le=100)
     contract: DataContract
@@ -194,3 +203,36 @@ class DashboardState(BaseModel):
     last_known_good: LastKnownGood | None
     timeline: List[AuditEvent]
     demo_layout: str
+
+
+class FleetCollectorState(BaseModel):
+    id: str
+    name: str
+    brightdata_collector_id: str
+    owner: str
+    environment: CollectorEnvironment
+    policy_mode: PolicyMode
+    status: HealthStatus
+    health_score: int = Field(ge=0, le=100)
+    contract_version: int = Field(ge=1)
+    last_run_at: datetime | None = None
+    active_incident_id: str | None = None
+    incident_open_seconds: int = Field(default=0, ge=0)
+    protected_records: int = Field(default=0, ge=0)
+
+
+class FleetSummary(BaseModel):
+    generated_at: datetime = Field(default_factory=utc_now)
+    total_collectors: int = Field(ge=0)
+    matching_collectors: int = Field(ge=0)
+    healthy: int = Field(ge=0)
+    degraded: int = Field(ge=0)
+    broken: int = Field(ge=0)
+    active_incidents: int = Field(ge=0)
+    average_health_score: float = Field(ge=0, le=100)
+    protected_records: int = Field(ge=0)
+    failure_budget_seconds: int = Field(ge=0)
+    incident_seconds: int = Field(ge=0)
+    failure_budget_remaining_seconds: int = Field(ge=0)
+    failure_budget_state: Literal["healthy", "at_risk", "exhausted"]
+    collectors: List[FleetCollectorState]

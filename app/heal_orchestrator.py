@@ -4,14 +4,18 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from uuid import uuid4
 
+from app.alerts import WebhookAlertRouter
 from app.brightdata_client import BrightDataAdapter, DemoBrightDataAdapter
 from app.contracts import build_repair_prompt, evaluate_contract, schema_signature
 from app.errors import DomainError
 from app.models import (
     AuditEvent,
     Collector,
+    CollectorEnvironment,
     DashboardState,
     DataContract,
+    FleetCollectorState,
+    FleetSummary,
     HealthStatus,
     LastKnownGood,
     PolicyMode,
@@ -64,9 +68,15 @@ def _build_provider_evidence(external: Dict[str, Any]) -> ProviderRepairEvidence
 
 
 class ScrapeSentryService:
-    def __init__(self, repository: Repository, adapter: BrightDataAdapter) -> None:
+    def __init__(
+        self,
+        repository: Repository,
+        adapter: BrightDataAdapter,
+        alert_router: WebhookAlertRouter | None = None,
+    ) -> None:
         self.repository = repository
         self.adapter = adapter
+        self.alert_router = alert_router
 
     def register_collector(self, collector: Collector) -> Collector:
         self.repository.save_collector(collector)
@@ -98,6 +108,97 @@ class ScrapeSentryService:
 
     def list_collectors(self) -> List[Collector]:
         return self.repository.list_collectors()
+
+    def get_fleet_health(
+        self,
+        status: HealthStatus | None = None,
+        environment: CollectorEnvironment | None = None,
+        owner: str | None = None,
+    ) -> FleetSummary:
+        all_collectors = self.repository.list_collectors()
+        normalized_owner = owner.casefold() if owner else None
+        collectors = [
+            collector
+            for collector in all_collectors
+            if (status is None or collector.status == status)
+            and (environment is None or collector.environment == environment)
+            and (normalized_owner is None or collector.owner.casefold() == normalized_owner)
+        ]
+        now = datetime.now(timezone.utc)
+        states: List[FleetCollectorState] = []
+        for collector in collectors:
+            last_known_good = self.repository.get_last_known_good(collector.id)
+            incident_open_seconds = 0
+            if collector.active_incident_id:
+                opened = next(
+                    (
+                        event
+                        for event in self.repository.list_events(collector.id)
+                        if event.kind == "snapshot_quarantined"
+                    ),
+                    None,
+                )
+                if opened:
+                    incident_open_seconds = max(
+                        0, int((now - opened.created_at).total_seconds())
+                    )
+            states.append(
+                FleetCollectorState(
+                    id=collector.id,
+                    name=collector.name,
+                    brightdata_collector_id=collector.brightdata_collector_id,
+                    owner=collector.owner,
+                    environment=collector.environment,
+                    policy_mode=collector.policy_mode,
+                    status=collector.status,
+                    health_score=collector.health_score,
+                    contract_version=collector.contract.version,
+                    last_run_at=collector.last_run_at,
+                    active_incident_id=collector.active_incident_id,
+                    incident_open_seconds=incident_open_seconds,
+                    protected_records=(
+                        len(last_known_good.snapshot) if last_known_good else 0
+                    ),
+                )
+            )
+        states.sort(
+            key=lambda item: (
+                {HealthStatus.RED: 0, HealthStatus.YELLOW: 1, HealthStatus.GREEN: 2}[
+                    item.status
+                ],
+                item.name.casefold(),
+            )
+        )
+        budget_seconds = sum(item.failure_budget_minutes * 60 for item in collectors)
+        incident_seconds = sum(item.incident_open_seconds for item in states)
+        remaining_seconds = max(0, budget_seconds - incident_seconds)
+        budget_ratio = incident_seconds / budget_seconds if budget_seconds else 0
+        budget_state = (
+            "exhausted"
+            if budget_seconds and remaining_seconds == 0
+            else "at_risk"
+            if budget_ratio >= 0.75
+            else "healthy"
+        )
+        return FleetSummary(
+            total_collectors=len(all_collectors),
+            matching_collectors=len(states),
+            healthy=sum(item.status == HealthStatus.GREEN for item in states),
+            degraded=sum(item.status == HealthStatus.YELLOW for item in states),
+            broken=sum(item.status == HealthStatus.RED for item in states),
+            active_incidents=sum(bool(item.active_incident_id) for item in states),
+            average_health_score=(
+                round(sum(item.health_score for item in states) / len(states), 1)
+                if states
+                else 0
+            ),
+            protected_records=sum(item.protected_records for item in states),
+            failure_budget_seconds=budget_seconds,
+            incident_seconds=incident_seconds,
+            failure_budget_remaining_seconds=remaining_seconds,
+            failure_budget_state=budget_state,
+            collectors=states,
+        )
 
     def check_health(
         self,
@@ -148,13 +249,18 @@ class ScrapeSentryService:
                     )
                 else:
                     collector.active_incident_id = f"inc_{uuid4().hex[:10]}"
+                    self.repository.save_collector(collector)
                     self._event(
                         collector_id,
                         "snapshot_quarantined",
                         "Bad snapshot quarantined",
                         f"{len(evaluation.violations)} contract violations blocked "
                         "downstream delivery.",
-                        {"run_id": run.id, "score": evaluation.score},
+                        {
+                            "run_id": run.id,
+                            "score": evaluation.score,
+                            "incident_id": collector.active_incident_id,
+                        },
                     )
             else:
                 collector.last_healthy_at = run.created_at
@@ -474,6 +580,7 @@ class ScrapeSentryService:
                     {"repair_id": repair.id, "run_id": run.id},
                 )
             else:
+                incident_id = collector.active_incident_id
                 repair.state = RepairState.RECOVERED
                 collector.status = HealthStatus.GREEN
                 collector.health_score = production_evaluation.score
@@ -491,7 +598,11 @@ class ScrapeSentryService:
                     "recovery_verified",
                     "Recovery verified",
                     f"Canary and production checks passed at {production_evaluation.score}/100.",
-                    {"repair_id": repair.id, "run_id": run.id},
+                    {
+                        "repair_id": repair.id,
+                        "run_id": run.id,
+                        "incident_id": incident_id,
+                    },
                 )
             repair.updated_at = datetime.now(timezone.utc)
             self.repository.save_repair(repair)
@@ -557,7 +668,7 @@ class ScrapeSentryService:
         detail: str,
         metadata: Dict[str, Any] | None = None,
     ) -> None:
-        self.repository.save_event(
+        event = self.repository.save_event(
             AuditEvent(
                 id=f"evt_{uuid4().hex[:12]}",
                 collector_id=collector_id,
@@ -567,3 +678,5 @@ class ScrapeSentryService:
                 metadata=metadata or {},
             )
         )
+        if self.alert_router:
+            self.alert_router.route(event, self.repository.get_collector(collector_id))

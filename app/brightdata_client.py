@@ -121,8 +121,9 @@ class DemoBrightDataAdapter:
         if layout not in {"healthy", "broken"}:
             raise ValueError("layout must be 'healthy' or 'broken'")
         self.layout = layout
-        if layout == "healthy":
-            self.candidate_active = False
+        # A new layout selection starts a new demo collection cycle. Clear the
+        # previously activated repair so repeated judge runs can break again.
+        self.candidate_active = False
 
     def reset(self) -> None:
         self.layout = "healthy"
