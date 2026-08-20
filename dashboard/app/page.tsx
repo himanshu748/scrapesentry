@@ -52,7 +52,7 @@ function EmptyState({ children }: { children: React.ReactNode }) {
   return <div className="empty-state">{children}</div>;
 }
 
-export default function Home() {
+export function ScrapeSentryExperience({ surface }: { surface: "landing" | "console" }) {
   const [state, setState] = useState<DashboardState>();
   const [evidence, setEvidence] = useState<LiveRunEvidence>();
   const [safeOutput, setSafeOutput] = useState<SafeOutput>();
@@ -87,11 +87,15 @@ export default function Home() {
   }, [selectedCollectorId]);
 
   useEffect(() => {
+    if (surface === "landing") {
+      request<LiveRunEvidence>("/api/evidence/live-run").then(setEvidence).catch((reason) => setError(reason.message));
+      return;
+    }
     Promise.all([
       refresh(),
       request<LiveRunEvidence>("/api/evidence/live-run").then(setEvidence)
     ]).catch((reason) => setError(reason.message));
-  }, [refresh]);
+  }, [refresh, surface]);
 
   async function act(name: string, action: () => Promise<unknown>) {
     setBusy(name);
@@ -180,7 +184,7 @@ export default function Home() {
     };
   }, [broken, repair, selectedCollectorId, state]);
 
-  if (!state) {
+  if (surface === "landing") {
     return (
       <>
         <a className="skip-link" href="#main-content">Skip to main content</a>
@@ -192,20 +196,31 @@ export default function Home() {
           <TaglineReveal />
           <UseItSection />
           <EvidenceSection evidence={evidence} />
-          <section className="console-shell" id="console" aria-labelledby="console-loading-title">
+          <FAQSection />
+          <FinalCallToAction />
+          <SiteFooter />
+        </main>
+      </>
+    );
+  }
+
+  if (!state) {
+    return (
+      <>
+        <a className="skip-link" href="#main-content">Skip to main content</a>
+        <SiteHeader />
+        <main className="console-route-page" id="main-content">
+          <section className="console-shell console-route-shell" aria-labelledby="console-loading-title">
             <ConsoleIntro />
             <div className="console-loading">
               <span className="console-loading-mark">S</span>
               <div>
                 <strong id="console-loading-title">Connecting to the control plane</strong>
-                <p>{error || "Waking the live recovery engine and loading the latest protected state."}</p>
+                <p>{error || "Waking the recovery engine and loading the latest protected state."}</p>
               </div>
               {error && <button onClick={() => refresh().catch(() => undefined)}>Retry connection</button>}
             </div>
           </section>
-          <FAQSection />
-          <FinalCallToAction />
-          <SiteFooter />
         </main>
       </>
     );
@@ -322,16 +337,8 @@ export default function Home() {
     <>
       <a className="skip-link" href="#main-content">Skip to main content</a>
       <SiteHeader />
-      <main id="main-content">
-      <LandingHero />
-      <RecoveryStory />
-      <WorkflowSection />
-      <TaglineReveal />
-      <UseItSection />
-      <EvidenceSection evidence={evidence} />
-
-      <section className="console-shell" id="console" aria-labelledby="console-title">
-      <ConsoleIntro />
+      <main className="console-route-page" id="main-content">
+      <section className="console-shell console-route-shell" aria-labelledby="console-title">
       <header className="topbar">
         <div className="brand">
           <div className="brand-mark">S</div>
@@ -594,11 +601,12 @@ export default function Home() {
         </div>
       </section>
 
-      <FAQSection />
-      <FinalCallToAction />
-
       <SiteFooter collectorId={c.brightdata_collector_id} />
       </main>
     </>
   );
+}
+
+export default function Home() {
+  return <ScrapeSentryExperience surface="landing" />;
 }

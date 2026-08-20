@@ -2,6 +2,7 @@
 
 import { createScope, createTimeline, stagger } from "animejs";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -88,30 +89,30 @@ const GUARD_STEPS = [
 ] as const;
 
 export function SiteHeader() {
+  const pathname = usePathname();
   return (
     <header className="site-header concept-header">
-      <a className="site-brand" href="#top" aria-label="ScrapeSentry home">
+      <a className="site-brand" href="/" aria-label="ScrapeSentry home">
         <span className="site-mark-concept"><ShieldCheck size={27} weight="regular" /></span>
         <strong>ScrapeSentry</strong>
       </a>
       <nav className="desktop-nav" aria-label="Primary navigation">
-        <a href="#product">Product</a>
-        <a href="#how-it-works">Recovery</a>
-        <a href="#use-it">Use it</a>
-        <a href="#mcp">MCP</a>
+        <a href="/" aria-current={pathname === "/" ? "page" : undefined}>Product</a>
+        <a href="/console" aria-current={pathname === "/console" ? "page" : undefined}>Console</a>
+        <a href="/docs" aria-current={pathname === "/docs" ? "page" : undefined}>Docs</a>
+        <a href="/evidence" aria-current={pathname === "/evidence" ? "page" : undefined}>Evidence</a>
       </nav>
       <div className="site-actions">
-        <a className="concept-console-link" href="#console" aria-label="Open live console">
+        <a className="concept-console-link" href="/console" aria-label="Open live console">
           <TerminalWindow size={22} weight="regular" />
         </a>
         <details className="mobile-menu">
           <summary aria-label="Open navigation"><List size={22} /></summary>
           <nav aria-label="Mobile navigation">
-            <a href="#product">Product</a>
-            <a href="#how-it-works">Recovery</a>
-            <a href="#use-it">Use it</a>
-            <a href="#mcp">MCP</a>
-            <a href="#console">Open live console</a>
+            <a href="/">Product</a>
+            <a href="/console">Console</a>
+            <a href="/docs">Docs</a>
+            <a href="/evidence">Evidence</a>
           </nav>
         </details>
       </div>
@@ -252,9 +253,9 @@ export function LandingHero() {
           <span className="hero-heading-line">ScrapeSentry</span>
           <span className="hero-heading-line">does not.</span>
         </h1>
-        <p>Detect data drift, quarantine unsafe output and verify recovery before bad rows reach production.</p>
+        <p>ScrapeSentry watches a Bright Data collector, blocks broken output and keeps the last verified rows live while the repair moves through human approval.</p>
         <div className="hero-actions">
-          <a className="primary-cta" href="#console">Open live console <ArrowRight size={17} weight="bold" /></a>
+          <a className="primary-cta" href="/console">Open live console <ArrowRight size={17} weight="bold" /></a>
           <a className="secondary-cta" href="#product"><Play size={17} weight="fill" /> Watch it recover</a>
         </div>
         <p className="hero-proof"><ShieldCheck size={16} weight="fill" /> Bright Data production evidence · 12 rows protected · 0 unsafe rows served</p>
@@ -483,7 +484,7 @@ export function UseItSection() {
         <h2 id="adoption-title">Bring one collector. Leave with a protected data product.</h2>
         <p>ScrapeSentry wraps the Bright Data collector you already run. It does not replace your scraper or expose its credentials in the browser.</p>
         <div className="adoption-actions">
-          <a className="primary-cta" href="#console">Try the hosted recovery <ArrowRight size={17} weight="bold" /></a>
+          <a className="primary-cta" href="/console">Try the hosted recovery <ArrowRight size={17} weight="bold" /></a>
           <a className="secondary-cta" href="https://github.com/himanshu748/scrapesentry" target="_blank" rel="noreferrer">Get the source</a>
         </div>
       </div>
@@ -633,7 +634,7 @@ export function FinalCallToAction() {
       </div>
       <div>
         <a className="secondary-cta" href="#top"><ArrowClockwise size={17} /> Replay story</a>
-        <a className="primary-cta" href="#console">Open live console <ArrowRight size={17} weight="bold" /></a>
+        <a className="primary-cta" href="/console">Open live console <ArrowRight size={17} weight="bold" /></a>
       </div>
     </section>
   );
@@ -642,11 +643,13 @@ export function FinalCallToAction() {
 export function SiteFooter({ collectorId }: { collectorId?: string }) {
   return (
     <footer className="site-footer">
-      <a className="footer-brand" href="#top">ScrapeSentry</a>
+      <a className="footer-brand" href="/">ScrapeSentry</a>
       <p>Powered by Bright Data Scraper Studio and Self Healing</p>
       <nav aria-label="Footer navigation">
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
+        <a href="/docs">Docs</a>
+        <a href="/evidence">Evidence</a>
         <a href="https://github.com/himanshu748/scrapesentry" target="_blank" rel="noreferrer">GitHub</a>
         <a href="#top">Back to top</a>
       </nav>
