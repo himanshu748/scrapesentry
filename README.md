@@ -2,8 +2,9 @@
 
 ## Demo
 
-**Watch the 3 minute walkthrough:** [scrapesentry.vercel.app/demo](https://scrapesentry.vercel.app/demo)
-_YouTube mirror: add the link here after upload._
+**Watch the 2 minute 56 second walkthrough:** [YouTube](https://youtu.be/rvES9OQ8zQQ)
+
+The same demo is also available on the [project site](https://scrapesentry.vercel.app/demo).
 
 A compressed copy is committed at [`docs/demo/scrapesentry-demo.mp4`](docs/demo/scrapesentry-demo.mp4)
 and the shot list it was built from is [`docs/demo-script.md`](docs/demo-script.md). It covers the
@@ -11,6 +12,7 @@ project, the tech stack and architecture, the live recovery demo and what the bu
 
 | | |
 |---|---|
+| YouTube demo | https://youtu.be/rvES9OQ8zQQ |
 | Hosted demo video | https://scrapesentry.vercel.app/demo |
 | Live dashboard (Render) | https://scrapesentry-himanshu748.onrender.com |
 | Live dashboard (Vercel) | https://scrapesentry.vercel.app |
@@ -43,7 +45,7 @@ ScrapeSentry is an MCP server and operator dashboard that detects silent scraper
 
 Source: [github.com/himanshu748/scrapesentry](https://github.com/himanshu748/scrapesentry)
 
-Live judge demo: [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com/). The final Vercel production URL is still pending.
+Live judge demo: [scrapesentry.vercel.app](https://scrapesentry.vercel.app/). The Render deployment remains available as a fallback at [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com/).
 
 CI: [latest ScrapeSentry CI run](https://github.com/himanshu748/scrapesentry/actions/workflows/ci.yml)
 
@@ -59,7 +61,7 @@ The public demo is designed to be safe for judges: it replays a deterministic fa
 | Example structured output | [`examples/brightdata-live-run.json`](examples/brightdata-live-run.json) and [`examples/contract.json`](examples/contract.json) |
 | Custom Scraper Studio collector | Collector `c_msxcshnz2bwrroekf3`, production job `j_msyad7l21v1fnqbljn` and Self-Healing job `ia_msya56gd1y2ucwwy0j` |
 | Public web data only | [Books to Scrape](https://books.toscrape.com/) is public, requires no login and contains no private, restricted, paywalled or government data |
-| Demo video | The final public YouTube URL is pending and will be added before submission. |
+| Demo video | [2 minute 56 second YouTube walkthrough](https://youtu.be/rvES9OQ8zQQ) covering the product, architecture, recovery workflow and learning |
 | AI coding assistance | Disclosed in the [AI assistance section](#ai-assistance-disclosure) |
 
 ## Why it exists
@@ -96,7 +98,7 @@ The deterministic demo is grounded in a real Scraper Studio production run again
 
 The baseline raw provider output is committed as [`examples/brightdata-live-run.json`](examples/brightdata-live-run.json). The latest collection and Self-Healing metadata captured from the provider API and stats page is in [`examples/brightdata-day3-evidence.json`](examples/brightdata-day3-evidence.json). ScrapeSentry parses Bright Data JSON or NDJSON, normalizes Price objects at the adapter boundary then validates the exact fields shown in [`examples/contract.json`](examples/contract.json). The dashboard exposes both real job IDs, provider run statistics, Self-Healing progress, schema and an SHA-256 fingerprint of the baseline artifact.
 
-The dashboard also renders the core MCP execution trace so judges can see how `check_health`, `get_drift_report`, `propose_heal`, `approve_heal`, `confirm_provider_publish` and `verify_recovery` advance through the safety gates. The final submission will link to the complete walkthrough on YouTube.
+The dashboard also renders the core MCP execution trace so judges can see how `check_health`, `get_drift_report`, `propose_heal`, `approve_heal`, `confirm_provider_publish` and `verify_recovery` advance through the safety gates. The [complete YouTube walkthrough](https://youtu.be/rvES9OQ8zQQ) shows this path end to end.
 
 A form-ready project narrative, verified metrics, limitations and AI disclosure are collected in [`outputs/ScrapeSentry-Submission-Draft.md`](outputs/ScrapeSentry-Submission-Draft.md).
 
