@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertStatus, DashboardState, FleetSummary, LiveRunEvidence, MonitorStatus, Repair, SafeOutput, SystemReadiness, request } from "../lib/api";
 import {
+  BrightDataStory,
   ConsoleIntro,
   EvidenceSection,
   FAQSection,
@@ -16,9 +17,23 @@ import {
   WorkflowSection
 } from "./components/NarrativeLanding";
 import { FleetCommand } from "./components/FleetCommand";
+import { JudgeTest } from "./components/JudgeTest";
 import { ReadinessPanel } from "./components/ReadinessPanel";
 
 const DEFAULT_COLLECTOR_ID = "books-to-scrape";
+
+const ACTION_SUCCESS_COPY: Record<string, string> = {
+  monitor: "Monitor cycle completed. Dashboard evidence is current.",
+  reset: "Demo state reset. The verified baseline is active.",
+  check: "Live health check completed. Contract evidence is current.",
+  approve: "Repair approved. The provider release gate is updated.",
+  publish: "Provider publish recorded. Guarded verification is unlocked.",
+  verify: "Guarded verification completed. Release gates are updated.",
+  repair: "Repair candidate generated. Human approval is required.",
+  drift: "Selector drift detected. Unsafe output was quarantined.",
+  reject: "Repair rejected. Production release remains locked.",
+  "safe-output": "Protected output refreshed from the latest verified snapshot."
+};
 
 function relativeTime(value?: string) {
   if (!value) return "Never";
@@ -63,6 +78,8 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
   const [selectedCollectorId, setSelectedCollectorId] = useState(DEFAULT_COLLECTOR_ID);
   const [busy, setBusy] = useState<string>();
   const [error, setError] = useState<string>();
+  const [notice, setNotice] = useState<string>();
+  const [retryAction, setRetryAction] = useState<{ name: string; run: () => Promise<unknown> }>();
 
   const refresh = useCallback(async () => {
     const nextFleet = await request<FleetSummary>("/api/fleet");
@@ -100,11 +117,15 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
   async function act(name: string, action: () => Promise<unknown>) {
     setBusy(name);
     setError(undefined);
+    setNotice(undefined);
+    setRetryAction(undefined);
     try {
       await action();
       await refresh();
+      setNotice(ACTION_SUCCESS_COPY[name] || "Action completed. Dashboard evidence is current.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Something went wrong");
+      setRetryAction({ name, run: action });
     } finally {
       setBusy(undefined);
     }
@@ -191,7 +212,9 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
         <SiteHeader />
         <main id="main-content">
           <LandingHero />
+          <BrightDataStory evidence={evidence} />
           <RecoveryStory />
+          <JudgeTest />
           <WorkflowSection />
           <TaglineReveal />
           <UseItSection />
@@ -205,6 +228,14 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
   }
 
   if (!state) {
+    const retryConnection = async () => {
+      setError(undefined);
+      try {
+        await refresh();
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "Could not connect to the control plane.");
+      }
+    };
     return (
       <>
         <a className="skip-link" href="#main-content">Skip to main content</a>
@@ -212,14 +243,28 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
         <main className="console-route-page" id="main-content">
           <section className="console-shell console-route-shell" aria-labelledby="console-loading-title">
             <ConsoleIntro />
-            <div className="console-loading">
+            <div className={`console-loading ${error ? "connection-error" : ""}`} role={error ? "alert" : "status"} aria-busy={!error}>
               <span className="console-loading-mark">S</span>
               <div>
-                <strong id="console-loading-title">Connecting to the control plane</strong>
-                <p>{error || "Waking the recovery engine and loading the latest protected state."}</p>
+                <strong id="console-loading-title">{error ? "Control plane unavailable" : "Connecting to the control plane"}</strong>
+                <p>{error || "Loading collector health, protected output and recovery evidence."}</p>
               </div>
-              {error && <button onClick={() => refresh().catch(() => undefined)}>Retry connection</button>}
+              {error && (
+                <div className="console-loading-actions">
+                  <button type="button" onClick={retryConnection}>Retry connection</button>
+                  <a href="/docs#configure">Review setup</a>
+                </div>
+              )}
             </div>
+            {!error && (
+              <div className="console-skeleton-grid" aria-hidden="true">
+                {Array.from({ length: 4 }, (_, index) => (
+                  <span className="console-skeleton-card" key={index}>
+                    <i /><b /><small />
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
         </main>
       </>
@@ -347,8 +392,8 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
         <div className="topbar-right">
           <span className="environment"><i /> Production evidence linked</span>
           <span className={`monitor-chip ${monitor?.running ? "running" : ""}`}><i />{monitor?.running ? `Monitoring every ${monitor.interval_seconds}s` : `${monitor?.cycles_completed || 0} monitor cycles`}</span>
-          <button className="ghost-button" disabled={Boolean(busy)} onClick={() => act("monitor", () => request<MonitorStatus>("/api/monitor/run", { method: "POST" }))}>{busy === "monitor" ? "Checking..." : "Run monitor"}</button>
-          <button className="ghost-button" disabled={Boolean(busy)} onClick={() => act("reset", () => request("/api/demo/reset", { method: "POST" }))}>Reset</button>
+          <button type="button" className="ghost-button" disabled={Boolean(busy)} aria-busy={busy === "monitor"} onClick={() => act("monitor", () => request<MonitorStatus>("/api/monitor/run", { method: "POST" }))}>{busy === "monitor" ? "Checking..." : "Run monitor"}</button>
+          <button type="button" className="ghost-button" disabled={Boolean(busy)} aria-busy={busy === "reset"} onClick={() => act("reset", () => request("/api/demo/reset", { method: "POST" }))}>{busy === "reset" ? "Resetting..." : "Reset"}</button>
         </div>
       </header>
 
@@ -358,13 +403,28 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
           <h3 id="console-title">Know when your scraper lies.</h3>
           <p>Run the real contract monitor, inspect evidence and move the incident through guarded recovery.</p>
         </div>
-        <button className="primary-button" disabled={Boolean(busy)} onClick={() => primary && act(primary.name, primary.run)}>
+        <button type="button" className="primary-button" disabled={Boolean(busy)} aria-busy={busy === primary?.name} onClick={() => primary && act(primary.name, primary.run)}>
           {busy === primary?.name ? "Working..." : primary?.text}
           <span>→</span>
         </button>
       </section>
 
-      {error && <div className="error-banner" role="alert"><strong>Action blocked</strong><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError(undefined)}>×</button></div>}
+      {error && (
+        <div className="feedback-banner error-banner" role="alert">
+          <div className="feedback-copy"><strong>Action blocked</strong><span>{error}</span></div>
+          <div className="feedback-actions">
+            {retryAction && <button type="button" onClick={() => act(retryAction.name, retryAction.run)}>Try again</button>}
+            <button type="button" aria-label="Dismiss error" onClick={() => { setError(undefined); setRetryAction(undefined); }}>Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {notice && (
+        <div className="feedback-banner success-banner" role="status">
+          <div className="feedback-copy"><strong>Dashboard updated</strong><span>{notice}</span></div>
+          <div className="feedback-actions"><button type="button" onClick={() => setNotice(undefined)}>Dismiss</button></div>
+        </div>
+      )}
 
       <FleetCommand
         fleet={fleet}
@@ -399,7 +459,7 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
         </div>
       </section>
 
-      <section className="metrics-grid" aria-label="Live incident metrics" tabIndex={0}>
+      <section className="metrics-grid" aria-label="Live incident metrics">
         <article className="metric-card health-card">
           <div className="metric-label">Fleet health</div>
           <div className="score-row">
@@ -462,6 +522,27 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {!safeOutput && (
+        <section className="safe-feed safe-feed-empty" aria-labelledby="safe-feed-empty-title">
+          <EmptyState>
+            <span className="empty-shield">◇</span>
+            <strong id="safe-feed-empty-title">No protected snapshot is available</strong>
+            <p>Run a health check to establish a contract-valid baseline before serving downstream data.</p>
+            <button
+              type="button"
+              disabled={Boolean(busy)}
+              aria-busy={busy === "safe-output"}
+              onClick={() => act("safe-output", async () => {
+                const output = await request<SafeOutput>(`/api/collectors/${selectedCollectorId}/safe-output`);
+                setSafeOutput(output);
+              })}
+            >
+              {busy === "safe-output" ? "Refreshing..." : "Refresh protected output"}
+            </button>
+          </EmptyState>
         </section>
       )}
 
@@ -537,7 +618,7 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
               <div className="gate-row">
                 <span><i className={repair.state === "awaiting_approval" ? "pulse" : ""} /> Approval gate</span>
                 {repair.state === "awaiting_approval" ? (
-                  <div className="gate-actions"><button disabled={Boolean(busy)} onClick={() => act("reject", () => request(`/api/collectors/${selectedCollectorId}/repairs/reject`, { method: "POST", body: JSON.stringify({ reason: "Rejected in dashboard review" }) }))}>Reject</button><strong>Human decision required</strong></div>
+                <div className="gate-actions"><button type="button" disabled={Boolean(busy)} aria-busy={busy === "reject"} onClick={() => act("reject", () => request(`/api/collectors/${selectedCollectorId}/repairs/reject`, { method: "POST", body: JSON.stringify({ reason: "Rejected in dashboard review" }) }))}>{busy === "reject" ? "Rejecting..." : "Reject"}</button><strong>Human decision required</strong></div>
                 ) : <strong>{label(repair.state)}</strong>}
               </div>
             </>
@@ -561,12 +642,14 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
         <article className="panel timeline-panel">
           <div className="panel-heading"><div><span className="section-kicker">Audit log</span><h2>What happened</h2></div><span className="contract-chip">Contract v{c.contract.version}</span></div>
           <div className="timeline">
-            {state.timeline.slice(0, 5).map((event, index) => (
+            {state.timeline.length ? state.timeline.slice(0, 5).map((event, index) => (
               <div className="timeline-item" key={event.id}>
                 <div className="timeline-rail"><i className={index === 0 ? "latest" : ""} />{index < Math.min(state.timeline.length, 5) - 1 && <span />}</div>
                 <div><strong>{event.title}</strong><p>{event.detail}</p><time>{relativeTime(event.created_at)}</time></div>
               </div>
-            ))}
+            )) : (
+              <EmptyState><span className="empty-shield">○</span><strong>No audit events yet</strong><p>Run the monitor to record the first contract decision.</p></EmptyState>
+            )}
           </div>
         </article>
       </section>

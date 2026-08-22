@@ -1,8 +1,35 @@
 import type { Metadata } from "next";
+import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
+const display = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-instrument",
+  display: "swap"
+});
+
+const sans = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap"
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  display: "swap"
+});
+
+const siteHost =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+  process.env.VERCEL_URL ||
+  "scrapesentry-himanshu748.onrender.com";
+const siteUrl = siteHost.startsWith("http") ? siteHost : `https://${siteHost}`;
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://scrapesentry-himanshu748.onrender.com"),
+  metadataBase: new URL(siteUrl),
   title: "ScrapeSentry | Stop Silent Scraper Failures",
   description: "Detect data drift, quarantine unsafe output and verify recovery before bad rows reach production.",
   applicationName: "ScrapeSentry",
@@ -26,7 +53,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );

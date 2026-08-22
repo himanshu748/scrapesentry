@@ -1,56 +1,71 @@
+import { CaretDown, CheckCircle, Database, Wrench } from "@phosphor-icons/react/dist/ssr";
 import { SystemReadiness } from "../../lib/api";
-
-function words(value: string) {
-  if (value === "judge_ready") return "recovery ready";
-  return value.replaceAll("_", " ");
-}
 
 export function ReadinessPanel({ readiness }: { readiness?: SystemReadiness }) {
   if (!readiness) return null;
 
-  const missing = readiness.checks.filter((check) => check.status === "missing").length;
-  const headline = readiness.production_ready
-    ? "Every production boundary is active."
-    : readiness.judge_ready
-      ? "The recovery path is complete. Production status stays honest."
-      : "The engine is running, but deployment controls are incomplete.";
+  const checks = new Map(readiness.checks.map((check) => [check.id, check]));
+  const demoReady = readiness.judge_ready || readiness.production_ready;
+  const evidenceReady = checks.get("provider")?.status === "ready" && checks.get("evidence")?.status === "ready";
+  const hardeningChecks = readiness.checks.filter((check) => check.status !== "ready");
 
   return (
-    <section className={`system-readiness ${readiness.status}`} aria-labelledby="readiness-title">
+    <section className={`system-readiness ${readiness.status}`} id="system-status" aria-labelledby="readiness-title">
       <div className="readiness-heading">
         <div>
-          <span className="section-kicker">System readiness</span>
-          <h2 id="readiness-title">{headline}</h2>
-          <p>
-            {readiness.production_ready
-              ? "Live provider access, durable history and the operator boundary are configured."
-              : readiness.judge_ready
-                ? "Recorded production evidence powers a complete credit safe workflow. Live deployment requirements remain visible below."
-                : `${missing} required control${missing === 1 ? " is" : "s are"} still missing.`}
-          </p>
+          <span className="section-kicker">System status</span>
+          <h2 id="readiness-title">{demoReady ? "Recovery is ready to test." : "Recovery needs configuration."}</h2>
+          <p>{demoReady
+            ? "Bright Data evidence is linked. Broken output is quarantined. Human-approved recovery passes canary and production verification."
+            : "Connect production evidence before testing the guarded recovery path."}</p>
         </div>
         <div className="readiness-verdict">
           <i />
-          <span>{words(readiness.status)}</span>
-          <small>{readiness.mode === "demo" ? "recorded evidence" : `${readiness.mode} mode`}</small>
+          <span>{demoReady ? "Ready to test" : "Setup required"}</span>
+          <small>{readiness.mode === "demo" ? "Recorded production evidence" : `${readiness.mode} environment`}</small>
         </div>
       </div>
 
-      <div className="readiness-track" aria-label="Deployment readiness checks" tabIndex={0}>
-        {readiness.checks.map((check, index) => (
-          <div className={`readiness-check ${check.status}`} key={check.id}>
-            <span>{check.status === "ready" ? "✓" : check.status === "missing" ? "!" : String(index + 1).padStart(2, "0")}</span>
-            <p><strong>{check.label}</strong><small>{check.detail}</small></p>
-            <b>{check.status}</b>
+      <div className="readiness-summary" aria-label="Current product status">
+        <article className={demoReady ? "verified" : "pending"}>
+          <CheckCircle size={24} weight="fill" aria-hidden="true" />
+          <span>Demo ready</span>
+          <strong>{demoReady ? "Recovery loop verified" : "Evidence required"}</strong>
+          <small>Detect, quarantine, repair, approve and release.</small>
+        </article>
+        <article className={evidenceReady ? "verified" : "pending"}>
+          <Database size={24} weight="fill" aria-hidden="true" />
+          <span>Bright Data verified</span>
+          <strong>{evidenceReady ? "Real provider evidence linked" : "Provider evidence missing"}</strong>
+          <small>Collector identity and production receipts stay visible.</small>
+        </article>
+        <article className={readiness.production_ready ? "verified" : "required"}>
+          <Wrench size={24} weight="fill" aria-hidden="true" />
+          <span>Hosted operations</span>
+          <strong>{readiness.production_ready ? "Customer traffic ready" : "Required before customer traffic"}</strong>
+          <small>Durable history, authentication and incident routing.</small>
+        </article>
+      </div>
+
+      {(hardeningChecks.length > 0 || readiness.blockers.length > 0) && (
+        <details className="deployment-disclosure">
+          <summary>
+            <span><strong>Hosted production controls</strong><small>Required before customer traffic</small></span>
+            <CaretDown size={16} aria-hidden="true" />
+          </summary>
+          <div className="deployment-disclosure-body">
+            <div>
+              <h3>The recorded test workflow is complete.</h3>
+              <p>These controls are still required for a durable, authenticated and continuously monitored hosted service. They do not block the current recorded test environment.</p>
+            </div>
+            <ul>
+              {hardeningChecks.map((check) => (
+                <li key={check.id}><strong>{check.label}</strong><span>{check.detail}</span></li>
+              ))}
+            </ul>
+            <p className="deployment-credentials">Live customer traffic also requires server-side <code>BRIGHTDATA_API_TOKEN</code>, <code>OPERATOR_API_TOKEN</code> and <code>APP_ENV=production</code>.</p>
           </div>
-        ))}
-      </div>
-
-      {readiness.blockers.length > 0 && (
-        <div className="readiness-blockers">
-          <span>Production checklist</span>
-          <p>{readiness.blockers.join(" ")}</p>
-        </div>
+        </details>
       )}
     </section>
   );

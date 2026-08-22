@@ -16,25 +16,3 @@ services:
         value: false
       - key: PYTHON_VERSION
         value: 3.12.8
-
-  - type: web
-    name: scrapesentry-himanshu748
-    runtime: node
-    plan: free
-    region: singapore
-    branch: main
-    rootDir: dashboard
-    autoDeploy: true
-    buildCommand: npm ci --include=dev && npm run build
-    startCommand: npm start -- --hostname 0.0.0.0 --port $PORT
-    healthCheckPath: /
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NODE_VERSION
-        value: 22.14.0
-      - key: API_SERVER_URL
-        fromService:
-          name: scrapesentry-api-himanshu748
-          type: web
-          envVarKey: RENDER_EXTERNAL_URL

@@ -27,7 +27,7 @@ class RollbackAction(BaseModel):
 
 
 class DemoLayoutAction(BaseModel):
-    layout: Literal["healthy", "broken"]
+    layout: Literal["healthy", "broken", "quality", "semantic", "partial"]
 
 
 class RegisterCollectorAction(BaseModel):

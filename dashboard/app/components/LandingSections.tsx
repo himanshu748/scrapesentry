@@ -24,7 +24,7 @@ const RECOVERY_STATES = [
     label: "Detect",
     title: "The contract breaks",
     detail: "Required price and availability fields disappear from every row.",
-    image: "/product/broken.jpg",
+    image: "/product/broken-v2.jpg",
     tone: "danger",
     Icon: WarningOctagon
   },
@@ -33,7 +33,7 @@ const RECOVERY_STATES = [
     label: "Quarantine",
     title: "Unsafe output stops",
     detail: "Twelve bad rows are blocked while the last known good snapshot stays available.",
-    image: "/product/broken.jpg",
+    image: "/product/broken-v2.jpg",
     tone: "warning",
     Icon: ShieldCheck
   },
@@ -42,7 +42,7 @@ const RECOVERY_STATES = [
     label: "Repair",
     title: "A candidate is prepared",
     detail: "Bright Data Self-Healing restores the contract without changing the schema.",
-    image: "/product/repair.jpg",
+    image: "/product/repair-v2.jpg",
     tone: "neutral",
     Icon: Wrench
   },
@@ -51,7 +51,7 @@ const RECOVERY_STATES = [
     label: "Approve",
     title: "A human keeps control",
     detail: "Production remains locked until the repair and provider publish are approved.",
-    image: "/product/approved.jpg",
+    image: "/product/approved-v2.jpg",
     tone: "neutral",
     Icon: UserCheck
   },
@@ -60,7 +60,7 @@ const RECOVERY_STATES = [
     label: "Verify",
     title: "Safe output returns",
     detail: "Canary and production checks pass before the protected feed is released.",
-    image: "/product/recovered.jpg",
+    image: "/product/recovered-v2.jpg",
     tone: "success",
     Icon: SealCheck
   }
@@ -149,7 +149,7 @@ export function LandingHero() {
         </div>
         <div className="hero-product-viewport">
           <Image
-            src="/product/baseline.jpg"
+            src="/product/baseline-v2.jpg"
             alt="ScrapeSentry live console showing a healthy scraper baseline and protected downstream feed"
             fill
             priority

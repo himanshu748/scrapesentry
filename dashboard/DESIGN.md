@@ -40,7 +40,7 @@ An asymmetric editorial hero is dominated by a horizontal scanner. A split recei
 
 ## Type strategy
 
-Geist carries the blunt editorial argument. Geist Mono labels rows, contracts, jobs, hashes and gates. Large type appears only for the central truth while operational text stays compact and legible.
+Instrument Serif carries the editorial argument. Inter keeps product copy and controls precise. JetBrains Mono labels rows, contracts, jobs, hashes and gates. Large type appears only for the central truth while operational text stays compact and legible.
 
 ## Material and color language
 
@@ -76,7 +76,7 @@ The scanner can be replayed. Recovery steps support click, touch and arrow-key n
 
 ## Accepted concept fidelity lock
 
-The accepted production specification is dashboard/design/landing-v2-hero-concept.png with dashboard/design/landing-v2-recovery-concept.png governing the guarded pipeline.
+The accepted production specification is encoded in the landing components, the brand system and `dashboard/design/landing-v4-thesis.md`. Internal review renders stay local and are intentionally excluded from the repository.
 
 - Canvas: true white with cool graphite text, hairline gray rules, emerald success and coral failure
 - Hero: editorial copy on the left, open data rails on the right and a physical metal contract gate centered between verified and incoming rows
@@ -92,10 +92,10 @@ No dark hero panel, no dark recovery section, no hero kicker and no proof-chip r
 
 ## Route concepts
 
-The landing route follows the accepted `landing-v2-hero-concept.png`. The application, docs and evidence routes are informed by three generated concept explorations:
+The landing route follows the accepted product thesis. The application, docs and evidence routes share the same hierarchy, rhythm and material language:
 
 - Console: a dense recovery control plane with collector identity, protected output, violation evidence and release gates
 - Docs: a calm quick-start layout with copyable commands, a sticky index and visible outcomes
 - Evidence: an auditable ledger with provider identities, captured contract, artifact fingerprint and release verification
 
-Generated layouts guide hierarchy, rhythm and material language. Generated commands, endpoints and provider claims are rejected unless the repository or production evidence supports them.
+Exploratory layouts guide hierarchy, rhythm and material language. Generated commands, endpoints and provider claims are rejected unless the repository or production evidence supports them.

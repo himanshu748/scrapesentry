@@ -13,3 +13,14 @@ dashboard/.env.local
 *.tsbuildinfo
 output/
 work/
+
+# Local design previews and editor backups
+.brand-preview/
+*.bak
+
+# Demo video source stays local. The submission links to the final YouTube upload.
+videos/
+
+# Internal design review renders and social export files stay local.
+dashboard/design/*.png
+outputs/*-ui.png

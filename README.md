@@ -4,7 +4,7 @@ ScrapeSentry is an MCP server and operator dashboard that detects silent scraper
 
 Source: [github.com/himanshu748/scrapesentry](https://github.com/himanshu748/scrapesentry)
 
-Live judge demo: [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com)
+Live judge demo: [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com/). The final Vercel production URL is still pending.
 
 CI: [latest ScrapeSentry CI run](https://github.com/himanshu748/scrapesentry/actions/workflows/ci.yml)
 
@@ -12,13 +12,24 @@ This repository contains a deterministic judge demo and a production adapter for
 
 The public demo is designed to be safe for judges: it replays a deterministic failure against captured production evidence, never consumes Bright Data credits and labels recorded provider evidence clearly. Live mode runs the same contract engine against the configured Scraper Studio collector.
 
+## Submission evidence
+
+| Requirement | Evidence |
+|---|---|
+| Public repository and setup | This README plus the [public GitHub repository](https://github.com/himanshu748/scrapesentry) |
+| Example structured output | [`examples/brightdata-live-run.json`](examples/brightdata-live-run.json) and [`examples/contract.json`](examples/contract.json) |
+| Custom Scraper Studio collector | Collector `c_msxcshnz2bwrroekf3`, production job `j_msyad7l21v1fnqbljn` and Self-Healing job `ia_msya56gd1y2ucwwy0j` |
+| Public web data only | [Books to Scrape](https://books.toscrape.com/) is public, requires no login and contains no private, restricted, paywalled or government data |
+| Demo video | The final public YouTube URL is pending and will be added before submission. |
+| AI coding assistance | Disclosed in the [AI assistance section](#ai-assistance-disclosure) |
+
 ## Why it exists
 
 A scraper can return HTTP 200 while its data is unusable. Selectors drift, fields disappear, values change meaning and downstream systems keep consuming the result. ScrapeSentry treats scraper output as a versioned data product with explicit contracts.
 
 ## Judge demo
 
-The included scenario is repeatable and does not depend on a live target website:
+The included scenarios are repeatable and do not depend on a live target website. Judges can run selector drift, quality collapse, semantic corruption or a partial crawl through the same policy engine. The complete recovery path is:
 
 1. A captured Bright Data production snapshot passes contract v1 and becomes the last known good output.
 2. **Simulate selector drift** changes `price` to `price_text` and `availability` to `stock_label`.
@@ -46,7 +57,7 @@ The deterministic demo is grounded in a real Scraper Studio production run again
 
 The baseline raw provider output is committed as [`examples/brightdata-live-run.json`](examples/brightdata-live-run.json). The latest collection and Self-Healing metadata captured from the provider API and stats page is in [`examples/brightdata-day3-evidence.json`](examples/brightdata-day3-evidence.json). ScrapeSentry parses Bright Data JSON or NDJSON, normalizes Price objects at the adapter boundary then validates the exact fields shown in [`examples/contract.json`](examples/contract.json). The dashboard exposes both real job IDs, provider run statistics, Self-Healing progress, schema and an SHA-256 fingerprint of the baseline artifact.
 
-The dashboard also renders the core MCP execution trace so judges can see how `check_health`, `get_drift_report`, `propose_heal`, `approve_heal`, `confirm_provider_publish` and `verify_recovery` advance through the safety gates. A ready-to-record walkthrough is available in [`outputs/ScrapeSentry-90-Second-Demo.md`](outputs/ScrapeSentry-90-Second-Demo.md).
+The dashboard also renders the core MCP execution trace so judges can see how `check_health`, `get_drift_report`, `propose_heal`, `approve_heal`, `confirm_provider_publish` and `verify_recovery` advance through the safety gates. The final submission will link to the complete walkthrough on YouTube.
 
 A form-ready project narrative, verified metrics, limitations and AI disclosure are collected in [`outputs/ScrapeSentry-Submission-Draft.md`](outputs/ScrapeSentry-Submission-Draft.md).
 
@@ -164,26 +175,29 @@ docker compose up --build
 
 The API health check gates dashboard startup, so the judge demo does not open against an unready control plane.
 
-## Deploy on Render
+## Deploy on Vercel and Render
 
-The included `render.yaml` creates two free web services in one Blueprint: a FastAPI control plane and a Next.js dashboard. Browser requests stay on the dashboard origin, then the server-only Next.js proxy forwards API calls to the `API_SERVER_URL` value that Render derives from `RENDER_EXTERNAL_URL`.
+The public architecture uses Vercel for the Next.js product and Render for the FastAPI control plane. Browser requests stay on the Vercel origin. The server-only Next.js proxy forwards API calls to `API_SERVER_URL`, so provider and operator credentials never enter browser code.
 
-1. Push this repository to GitHub.
-2. In Render, create a new Blueprint from the repository.
-3. Keep the default `main` branch and apply the Blueprint.
-4. Open the `scrapesentry-himanshu748` service URL after both health checks pass.
+1. Deploy the repository's `dashboard` directory to Vercel.
+2. Keep the included Render Blueprint connected to `main` for the FastAPI service.
+3. Set `API_SERVER_URL=https://scrapesentry-api-himanshu748.onrender.com` in Vercel when using a different API deployment.
+4. Set `NEXT_PUBLIC_SITE_URL` to the final Vercel production URL for stable canonical metadata.
+5. Verify `/`, `/console`, `/docs` and `/evidence`, then complete one recovery cycle in `/console`.
 
-The deployed judge experience is available at [scrapesentry-himanshu748.onrender.com](https://scrapesentry-himanshu748.onrender.com). Its full baseline, drift, quarantine, repair, approval, verification and release flow was exercised after deployment with no browser console errors. The API health endpoint is [scrapesentry-api-himanshu748.onrender.com/health](https://scrapesentry-api-himanshu748.onrender.com/health).
+The server proxy includes a safe production fallback to the public judge API, so Vercel previews remain functional before environment variables are configured. The API health endpoint is [scrapesentry-api-himanshu748.onrender.com/health](https://scrapesentry-api-himanshu748.onrender.com/health).
 
 The public deployment intentionally uses `APP_ENV=demo`. Do not add a Bright Data token to the public judge service. Use the credential-safe GitHub workflow or a private production deployment for live scheduled checks.
 
-Run the MCP server with:
+Run the MCP server locally with:
 
 ```bash
 python -m app.server
 ```
 
 Example client configurations are available for Codex, Claude Code and Cursor in `.mcp/`.
+
+The MCP transport is intentionally not exposed as an unauthenticated public Render service. A protected remote transport can be deployed later without changing the shared policy engine.
 
 ## Test
 
@@ -195,7 +209,7 @@ cd dashboard && npm run lint && npm run build
 
 Or run the complete local gate with `make verify`.
 
-The tests cover healthy and broken contracts, cross-field semantics, last known good retention, idempotency, API errors, schema approval, mutation authentication, rate limiting, readiness reporting and the full recovery lifecycle.
+The tests cover healthy output, four unrelated failure classes, cross-field semantics, last known good retention, idempotency, API errors, schema approval, mutation authentication, rate limiting, readiness reporting and the full recovery lifecycle.
 
 The GitHub Actions workflow runs Ruff, pytest, TypeScript checks and the Next.js production build on every push and pull request.
 
@@ -261,7 +275,7 @@ Downstream services can call `GET /api/collectors/{collector_id}/safe-output`. W
 
 ## AI assistance disclosure
 
-Codex was used to refine the product specification, implement the application, generate deterministic fixtures and run the test workflow. Product direction, scope decisions, Bright Data integration choices and final submission review remain the entrant's responsibility.
+Codex was used to refine the product specification, implement the application, generate deterministic fixtures and run the test workflow. The entrant reviewed the implementation, ran the full verification suite and can explain the architecture, provider adapter, contract engine and recovery state machine. Product direction, scope decisions, Bright Data integration choices and final submission review remain the entrant's responsibility.
 
 ## Bright Data references
 

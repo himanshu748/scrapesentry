@@ -3,10 +3,11 @@
 ## Project links
 
 - Source code: https://github.com/himanshu748/scrapesentry
-- Live demo: https://scrapesentry-himanshu748.onrender.com
+- Live demo: https://scrapesentry-himanshu748.onrender.com/ (working public release)
+- Final Vercel URL: https://scrapesentry.vercel.app (production promotion pending)
 - API health: https://scrapesentry-api-himanshu748.onrender.com/health
 - CI: https://github.com/himanshu748/scrapesentry/actions/workflows/ci.yml
-- Demo video: recording script is ready in `outputs/ScrapeSentry-90-Second-Demo.md`
+- Demo video: final public YouTube URL pending
 - Bright Data target: https://books.toscrape.com/
 
 ## One-line pitch
@@ -66,17 +67,18 @@ Most scraper tools focus on extraction or automatic selector repair. ScrapeSentr
 
 ## Reliability proof
 
-- 37 automated Python tests cover contracts, provider parsing, state transitions, idempotency, monitoring, authentication, alert routing and API behavior.
+- 44 automated Python tests cover contracts, four failure classes, provider parsing, state transitions, idempotency, monitoring, authentication, alert routing and API behavior.
 - TypeScript validation and the Next.js production build pass.
 - GitHub Actions CI is public and green on `main`.
 - The demo runs through baseline, break, quarantine, repair, approval, canary and production release without page reloads.
 - Latest broken output never replaces the last known good snapshot.
 - Repeated failures reuse the active incident rather than producing alert storms.
-- The deployed Render flow was exercised end to end with no browser console errors.
+- The complete local and Vercel preview browser flows were exercised from selector drift through repair, human approval, canary verification and production release.
+- The landing page exposes four runnable failure modes and recomposes without page overflow at 360, 768, 1024 and 1440 pixels.
 
 ## AI assistance disclosure
 
-Codex was used to refine the product specification, implement the application, generate deterministic fixtures and run the verification workflow. Product direction, scope decisions, Bright Data integration choices and final submission review remain the entrant's responsibility.
+Codex was used to refine the product specification, implement the application, generate deterministic fixtures and run the verification workflow. The entrant reviewed the implementation, ran the full verification suite and can explain the architecture, provider adapter, contract engine and recovery state machine. Product direction, scope decisions, Bright Data integration choices and final submission review remain the entrant's responsibility.
 
 ## Known limitations
 

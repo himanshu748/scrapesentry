@@ -2,12 +2,17 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const hostedApiTarget = "https://scrapesentry-api-himanshu748.onrender.com";
 
 const apiTarget =
   process.env.API_SERVER_URL ||
   (process.env.API_INTERNAL_HOSTPORT
     ? `http://${process.env.API_INTERNAL_HOSTPORT}`
-    : "http://127.0.0.1:8000");
+    : process.env.NODE_ENV === "production"
+      ? hostedApiTarget
+      : "http://127.0.0.1:8000");
 
 type RouteContext = { params: Promise<{ path: string[] }> };
 

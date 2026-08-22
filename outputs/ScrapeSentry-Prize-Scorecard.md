@@ -1,6 +1,10 @@
 # ScrapeSentry prize scorecard
 
-Updated from the WeMakeDevs Day 1 and Day 2 emails plus the official Scrape-Verse overview and rules on August 18, 2026. This is a readiness assessment, not a promise of a prize.
+Updated from the official WeMakeDevs Scrape-Verse page and the working build on August 21, 2026. This is a readiness assessment, not a promise of a prize.
+
+## Candid verdict
+
+The product is submission quality. The submission package is not complete until a playable demo video is rendered and the verified Vercel preview is promoted to the public production domain. Current rubric score: **56.0/60 (93.3%)** before the final video and production promotion.
 
 ## Eligibility
 
@@ -14,20 +18,20 @@ Updated from the WeMakeDevs Day 1 and Day 2 emails plus the official Scrape-Vers
 | Example structured output | Raw provider output plus normalized evidence in `examples/` | Complete |
 | AI assistance disclosed | README has a specific AI assistance disclosure | Complete |
 | Public source repository | `https://github.com/himanshu748/scrapesentry` | Complete |
-| Public working deployment | `https://scrapesentry-himanshu748.onrender.com` | Complete |
+| Public working deployment | `https://scrapesentry-himanshu748.onrender.com/` returned HTTP 200 on August 21. The final Vercel production URL is still pending. | Complete |
 | Clear README | Architecture, setup, live mode, MCP tools and safety model are documented | Complete |
-| Demo video showing the working project | Script exists but the video has not been recorded | Blocked |
+| Demo video showing the working project | Final public YouTube URL is pending | Blocked |
 
 ## Six equally weighted judging criteria
 
-| Criterion | Visible proof | Readiness | Last-mile action |
+| Criterion | Visible proof | Score | Last-mile action |
 |---|---|---:|---|
-| Potential impact | Quarantine stops silent data poisoning while the protected feed keeps serving the last known good snapshot | Strong | Show the feed stay clean during the deliberate break |
-| Creativity and innovation | Scraper repair is treated like a guarded software release with contracts, approval, canary checks and production verification | Strong | Lead with "A scraper can return 200 OK and still poison production" |
-| Technical excellence | Typed FastAPI and FastMCP service, provider adapter, state machine, idempotency, locks, tests and CI | Strong | Show the public repository and green CI run |
-| Use of Scraper Studio | Real custom Collector ID, provider collection IDs, Self-Healing job ID, production Version 2 and daily live contract workflow | Strong | Show the same Collector ID from provider proof through downstream release |
-| Reliability and self-healing | Controlled drift, quarantine, last known good fallback, repair preview, human approval, provider publish then canary and production gates | Strong | Record the complete red-to-green flow without cuts |
-| Presentation | Recovery flight recorder, provider evidence, protected feed, release gates, MCP trace and public judge URL | Strong | Record the clean 90-second demo video |
+| Potential impact | Quarantine stops silent data poisoning while the protected feed keeps serving the last known good snapshot | 9.2/10 | Show the feed stay clean during the deliberate break |
+| Creativity and innovation | Scraper repair is treated like a guarded software release with contracts, approval, canary checks and production verification | 9.4/10 | Lead with "A scraper can return 200 OK and still poison production" |
+| Technical excellence | Typed FastAPI and FastMCP service, provider adapter, state machine, idempotency, locks, 43 tests and CI | 9.6/10 | Show the public repository and green CI run |
+| Use of Scraper Studio | Real custom Collector ID, provider collection IDs, Self-Healing job ID, production Version 2 and structured output powering the product | 9.5/10 | Keep one Collector ID visible through provider proof and downstream release |
+| Reliability and self-healing | Four runnable failures, quarantine, last known good fallback, repair preview, human approval then canary and production gates | 9.7/10 | Record the complete red-to-green flow without cuts |
+| Presentation | Story-led landing page, live failure lab, recovery theatre, provider receipts, docs, evidence and operator console | 8.6/10 | Render the final demo video and promote the verified Vercel preview |
 
 ## Automatic prize-track coverage
 
@@ -37,7 +41,7 @@ Current proof is competitive. Scraper Studio is central rather than incidental. 
 
 ### Suit-Up, Best UI
 
-Current proof is strong. The dashboard now exposes a recovery flight recorder above the fold, a before-and-after data diff, a contract gate, protected records, provider IDs and the exact release state. It tells the story without requiring logs.
+Current proof is highly competitive. The landing page explains the false-success problem, runs four real contract failures and shows the complete guarded recovery. The interface recomposes at 360, 768, 1024 and 1440 pixels with no horizontal page overflow. The operator console exposes a recovery flight recorder, before-and-after output, release gates and the exact protected-feed state.
 
 ### Spider-Sense, Best Clean Code
 
@@ -53,11 +57,12 @@ The Day 1 and Day 2 LinkedIn posts satisfy the participation requirement only if
 
 ## Remaining mandatory submission blockers
 
-1. Record the working demo video.
+1. Render and upload the working demo video.
+2. Promote the verified preview to `https://scrapesentry.vercel.app` so judges receive a stable unprotected URL.
 
 ## Remaining win-readiness work
 
-1. Add `BRIGHTDATA_API_TOKEN` as a repository secret so the scheduled live workflow produces public run evidence.
-2. If time permits, add a second niche public target. Books to Scrape is a valid custom Scraper Studio target but it is a tutorial sandbox, so a long-tail production source would strengthen the impact story.
+1. Push the final source changes and confirm the public CI run is green.
+2. Add `BRIGHTDATA_API_TOKEN` as a repository secret only if a deliberate live scheduled workflow is still desired.
 
-No new core feature is more important than clearing the mandatory blockers. The project already addresses all six judging dimensions.
+No new core feature is more important than clearing the submission package and deployment gates. The project already addresses all six judging dimensions.

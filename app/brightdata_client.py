@@ -77,6 +77,21 @@ class DemoBrightDataAdapter:
                 row["price_text"] = f"£{price:.2f}" if isinstance(price, (int, float)) else price
                 row["stock_label"] = stock_labels.get(availability, availability)
             return rows
+        if name == "quality":
+            rows = load_live_snapshot(self.live_evidence_path)
+            for row in rows[:4]:
+                row["price"] = None
+            rows[1]["sku"] = rows[0]["sku"]
+            rows[1]["url"] = rows[0]["url"]
+            return rows
+        if name == "semantic":
+            rows = load_live_snapshot(self.live_evidence_path)
+            for row in rows[:4]:
+                row["availability"] = "coming_soon"
+                row["price"] = -99.0
+            return rows
+        if name == "partial":
+            return load_live_snapshot(self.live_evidence_path)[:4]
         return json.loads((self.fixture_dir / f"{name}.json").read_text(encoding="utf-8"))
 
     def collect(self, collector: Collector, purpose: str = "production") -> List[Dict[str, Any]]:
@@ -86,6 +101,28 @@ class DemoBrightDataAdapter:
 
     def propose_heal(self, collector: Collector, prompt: str) -> Dict[str, Any]:
         completed_at = datetime.now(timezone.utc).isoformat()
+        summaries = {
+            "broken": [
+                "Restore numeric GBP price extraction from the Bright Data Price value.",
+                "Normalize the changed stock label to the availability contract.",
+                "Preserve all ten production fields plus stable SKU and URL identities.",
+            ],
+            "quality": [
+                "Restore non-null numeric prices from the source product cards.",
+                "Rebuild stable SKU and URL identities before deduplication.",
+                "Revalidate all twelve rows against null-rate and uniqueness gates.",
+            ],
+            "semantic": [
+                "Map new stock copy back to the approved availability vocabulary.",
+                "Reject negative price values and recover the source GBP amount.",
+                "Re-run numeric range and cross-field contract checks.",
+            ],
+            "partial": [
+                "Restore pagination so the collector reaches all expected product pages.",
+                "Recover the missing eight rows without changing the output contract.",
+                "Re-run the exact row-count gate before releasing the snapshot.",
+            ],
+        }
         return {
             "provider": "brightdata_demo",
             "status": "done",
@@ -97,11 +134,10 @@ class DemoBrightDataAdapter:
             "draft_status": "not_required",
             "preview_rows": self._read("repaired"),
             "confidence": 98,
-            "diff_summary": [
-                "Restore numeric GBP price extraction from the Bright Data Price value.",
-                "Normalize the changed stock label to the availability contract.",
-                "Preserve all ten production fields plus stable SKU and URL identities.",
-            ],
+            "diff_summary": summaries.get(
+                self.layout,
+                ["Restore the recorded Bright Data snapshot to its verified contract."],
+            ),
             "prompt": prompt,
         }
 
@@ -118,8 +154,10 @@ class DemoBrightDataAdapter:
         self.layout = "healthy"
 
     def set_layout(self, layout: str) -> None:
-        if layout not in {"healthy", "broken"}:
-            raise ValueError("layout must be 'healthy' or 'broken'")
+        if layout not in {"healthy", "broken", "quality", "semantic", "partial"}:
+            raise ValueError(
+                "layout must be 'healthy', 'broken', 'quality', 'semantic' or 'partial'"
+            )
         self.layout = layout
         # A new layout selection starts a new demo collection cycle. Clear the
         # previously activated repair so repeated judge runs can break again.

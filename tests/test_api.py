@@ -1,6 +1,7 @@
 import importlib
 from datetime import datetime
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.api import app
@@ -93,6 +94,44 @@ def test_demo_api_flow():
     dashboard = client.get(f"/api/collectors/{DEMO_COLLECTOR_ID}/dashboard").json()
     assert dashboard["collector"]["status"] == "green"
     assert dashboard["last_known_good"] is not None
+
+
+@pytest.mark.parametrize(
+    ("layout", "expected_rules", "expected_fields", "expected_row_count"),
+    [
+        ("broken", {"required_field"}, {"price", "availability"}, 12),
+        ("quality", {"null_rate", "unique_field"}, {"price", "sku", "url"}, 12),
+        ("semantic", {"allowed_values", "numeric_range"}, {"availability", "price"}, 12),
+        ("partial", {"row_count"}, set(), 4),
+    ],
+)
+def test_judge_examples_are_blocked_by_the_real_contract_engine(
+    layout, expected_rules, expected_fields, expected_row_count
+):
+    client.post("/api/demo/reset").raise_for_status()
+    client.post("/api/demo/layout", json={"layout": layout}).raise_for_status()
+
+    response = client.post(
+        f"/api/collectors/{DEMO_COLLECTOR_ID}/check",
+        json={"idempotency_key": f"judge-example-{layout}"},
+    )
+
+    response.raise_for_status()
+    body = response.json()
+    assert body["quarantined"] is True
+    assert body["evaluation"]["status"] == "red"
+    assert body["evaluation"]["row_count"] == expected_row_count
+    violations = body["evaluation"]["violations"]
+    rules = {violation["rule"] for violation in violations}
+    fields = {violation.get("field") for violation in violations}
+    assert expected_rules <= rules
+    assert expected_fields <= fields
+
+    safe_output = client.get(
+        f"/api/collectors/{DEMO_COLLECTOR_ID}/safe-output"
+    ).json()
+    assert safe_output["stale"] is True
+    assert len(safe_output["snapshot"]) == 12
 
 
 def test_structured_domain_error():

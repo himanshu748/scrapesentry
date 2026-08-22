@@ -42,7 +42,7 @@ export function FleetCommand({
         </label>
       </div>
 
-      <div className="fleet-scoreboard" aria-label="Fleet health summary" tabIndex={0}>
+      <div className="fleet-scoreboard" aria-label="Fleet health summary">
         <div><span>Registered</span><strong>{fleet.total_collectors}</strong><small>real collector configuration{fleet.total_collectors === 1 ? "" : "s"}</small></div>
         <div><span>Fleet score</span><strong>{fleet.average_health_score.toFixed(1)}</strong><small>{fleet.healthy} healthy · {fleet.degraded} degraded</small></div>
         <div className={fleet.active_incidents ? "fleet-alert" : ""}><span>Open incidents</span><strong>{fleet.active_incidents}</strong><small>{fleet.broken} blocking contract{fleet.broken === 1 ? "" : "s"}</small></div>
@@ -88,7 +88,7 @@ export function FleetCommand({
           <strong>{alerts?.configured ? `Delivering to ${alerts.destination}` : "No operator destination configured"}</strong>
         </div>
         <p>New incidents and verified recoveries are deduplicated then signed with HMAC SHA256.</p>
-        <b>{alerts?.last_delivery ? `${alerts.last_delivery.status} · ${alerts.last_delivery.kind.replaceAll("_", " ")}` : alerts?.configured ? "Awaiting first incident" : "Production ready"}</b>
+        <b>{alerts?.last_delivery ? `${alerts.last_delivery.status} · ${alerts.last_delivery.kind.replaceAll("_", " ")}` : alerts?.configured ? "Awaiting first incident" : "Not configured"}</b>
       </div>
     </section>
   );
