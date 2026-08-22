@@ -64,6 +64,13 @@ The public demo is designed to be safe for judges: it replays a deterministic fa
 | Demo video | [2 minute 56 second YouTube walkthrough](https://youtu.be/rvES9OQ8zQQ) covering the product, architecture, recovery workflow and learning |
 | AI coding assistance | Disclosed in the [AI assistance section](#ai-assistance-disclosure) |
 
+### Second live collector
+
+- Collector: `c_mt40xnf923ztcasouj`
+- Production job: `j_mt419c3tatq3gju4v`, 2026-08-22 12:34:37 IST
+- Result: 51 records, 0 failed crawls, 100% success
+- Target and output: [GitHub Changelog](https://github.blog/changelog/) · [`examples/brightdata-live-run-2.json`](examples/brightdata-live-run-2.json)
+
 ## Why it exists
 
 A scraper can return HTTP 200 while its data is unusable. Selectors drift, fields disappear, values change meaning and downstream systems keep consuming the result. ScrapeSentry treats scraper output as a versioned data product with explicit contracts.
@@ -254,7 +261,7 @@ The tests cover healthy output, four unrelated failure classes, cross-field sema
 
 The GitHub Actions workflow runs Ruff, pytest, TypeScript checks and the Next.js production build on every push and pull request.
 
-The separate `Live Scraper Health` workflow triggers the real Scraper Studio Collector ID every day at 03:15 UTC, enforces the same production contract then uploads the provider job ID and result as a short-lived evidence artifact. Add `BRIGHTDATA_API_TOKEN` as a repository secret to activate it. The workflow never stores or prints the token.
+The separate `Live Scraper Health` workflow triggers both real Scraper Studio collectors every day at 03:15 UTC, enforces each production contract then uploads the provider job IDs and results as short-lived evidence artifacts. Add `BRIGHTDATA_API_TOKEN` as a repository secret to activate it. The workflow never stores or prints the token.
 
 ## Use a live Bright Data collector
 
