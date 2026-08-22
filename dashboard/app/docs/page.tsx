@@ -52,7 +52,7 @@ export default function DocsPage() {
       <main className="docs-page" id="main-content">
         <header className="docs-hero">
           <h1>Connect your collector.</h1>
-          <p>Put ScrapeSentry in front of an existing Bright Data collector in four steps. The collector stays the source while ScrapeSentry becomes its contract and recovery layer.</p>
+          <p>Put ScrapeSentry in front of an existing Bright Data collector in five steps. The collector stays the source while ScrapeSentry becomes its contract and recovery layer.</p>
           <div><Link className="primary-cta" href="/console">Open live console</Link><a className="secondary-cta" href="https://github.com/himanshu748/scrapesentry" target="_blank" rel="noreferrer">View source</a></div>
         </header>
 
@@ -69,7 +69,7 @@ export default function DocsPage() {
           </aside>
 
           <article className="docs-content">
-            <div className="docs-warning" role="note"><strong>Keep Bright Data tokens on the server.</strong><span>Never place provider or operator secrets in a `NEXT_PUBLIC_` variable.</span></div>
+            <div className="docs-warning" role="note"><strong>Keep Bright Data tokens on the server.</strong><span>Never place provider or operator secrets in a <code>NEXT_PUBLIC_</code> variable.</span></div>
 
             <section id="install">
               <span>01</span><div><h2>Install the service</h2><p>Clone the public repository, create a Python environment and install the typed FastAPI plus FastMCP service.</p><CodeBlock value={INSTALL} /></div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertStatus, DashboardState, FleetSummary, LiveRunEvidence, MonitorStatus, Repair, SafeOutput, SystemReadiness, request } from "../lib/api";
+import { AlertStatus, DashboardState, FleetSummary, LiveRunEvidence, MonitorStatus, Repair, RepairState, SafeOutput, SystemReadiness, request } from "../lib/api";
 import {
   BrightDataStory,
   ConsoleIntro,
@@ -22,6 +22,13 @@ import { ReadinessPanel } from "./components/ReadinessPanel";
 
 const DEFAULT_COLLECTOR_ID = "books-to-scrape";
 
+const APPROVED_STATES: RepairState[] = [
+  "approved",
+  "shadow_verifying",
+  "production_verifying",
+  "recovered"
+];
+
 const ACTION_SUCCESS_COPY: Record<string, string> = {
   monitor: "Monitor cycle completed. Dashboard evidence is current.",
   reset: "Demo state reset. The verified baseline is active.",
@@ -34,6 +41,37 @@ const ACTION_SUCCESS_COPY: Record<string, string> = {
   reject: "Repair rejected. Production release remains locked.",
   "safe-output": "Protected output refreshed from the latest verified snapshot."
 };
+// Source of truth for this list is app/server.py; keep both in step.
+const MCP_TOOL_GROUPS = [
+  {
+    title: "Register",
+    tools: ["register_collector", "set_data_contract", "list_collectors", "get_fleet_health"]
+  },
+  {
+    title: "Observe",
+    tools: [
+      "check_health",
+      "run_monitor_cycle",
+      "get_drift_report",
+      "get_alert_status",
+      "get_system_readiness"
+    ]
+  },
+  {
+    title: "Repair",
+    tools: [
+      "propose_heal",
+      "get_heal_preview",
+      "approve_heal",
+      "reject_heal",
+      "confirm_provider_publish"
+    ]
+  },
+  {
+    title: "Release",
+    tools: ["verify_recovery", "rollback_heal", "get_run_history", "get_last_known_good"]
+  }
+];
 
 function relativeTime(value?: string) {
   if (!value) return "Never";
@@ -287,7 +325,7 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
   const after = repair?.preview_rows[0] || {};
   const hadIncident = state.timeline.some((item) => item.kind === "snapshot_quarantined");
   const recordsProtected = hadIncident ? state.last_known_good?.snapshot.length || 0 : 0;
-  const approved = Boolean(repair && ["approved", "shadow_verifying", "production_verifying", "recovered"].includes(repair.state));
+  const approved = Boolean(repair && APPROVED_STATES.includes(repair.state));
   const providerPublishComplete = Boolean(
     repair && (
       !repair.provider_evidence?.requires_publish ||
@@ -633,7 +671,7 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
           <div className="panel-heading"><div><span className="section-kicker">Verify</span><h2>Release gates</h2></div></div>
           <div className="gate-stack">
             <div className={repair ? "complete" : ""}><span>1</span><p><strong>Candidate preview</strong><small>Contract tested against repaired rows</small></p><b>{repair ? "Passed" : "Waiting"}</b></div>
-            <div className={repair && ["approved", "shadow_verifying", "production_verifying", "recovered"].includes(repair.state) ? "complete" : ""}><span>2</span><p><strong>Human approval</strong><small>Schema and selector changes reviewed</small></p><b>{repair?.state === "awaiting_approval" ? "Required" : repair ? "Passed" : "Waiting"}</b></div>
+            <div className={approved ? "complete" : ""}><span>2</span><p><strong>Human approval</strong><small>Schema and selector changes reviewed</small></p><b>{repair?.state === "awaiting_approval" ? "Required" : repair ? "Passed" : "Waiting"}</b></div>
             <div className={providerPublishComplete ? "complete" : ""}><span>3</span><p><strong>Provider publish</strong><small>Reviewed Scraper Studio draft confirmed</small></p><b>{providerPublishComplete ? repair?.provider_evidence?.requires_publish ? "Passed" : "Not needed" : "Waiting"}</b></div>
             <div className={repair?.state === "recovered" ? "complete" : ""}><span>4</span><p><strong>Canary + production</strong><small>Fresh output must pass the same contract</small></p><b>{repair?.state === "recovered" ? "Passed" : "Waiting"}</b></div>
           </div>
@@ -680,6 +718,20 @@ export function ScrapeSentryExperience({ surface }: { surface: "landing" | "cons
             <div><span>02</span><p><strong>Safe by default</strong><small>Bad snapshots are quarantined while last known good data stays available.</small></p></div>
             <div><span>03</span><p><strong>Human control</strong><small>Schema changes never receive automatic approval and every decision enters the audit timeline.</small></p></div>
             <div><span>04</span><p><strong>Verified recovery</strong><small>Canary and production contracts must pass before the incident closes.</small></p></div>
+          </div>
+        </div>
+        <div className="mcp-inventory">
+          <header>
+            <h3>All 18 tools, one server</h3>
+            <p>Registered on the ScrapeSentry MCP server. The trace above runs seven of them.</p>
+          </header>
+          <div className="mcp-inventory-groups">
+            {MCP_TOOL_GROUPS.map((group) => (
+              <div key={group.title}>
+                <h4>{group.title}</h4>
+                <ul>{group.tools.map((tool) => <li key={tool}>{tool}</li>)}</ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -44,7 +44,7 @@ export function FleetCommand({
 
       <div className="fleet-scoreboard" aria-label="Fleet health summary">
         <div><span>Registered</span><strong>{fleet.total_collectors}</strong><small>real collector configuration{fleet.total_collectors === 1 ? "" : "s"}</small></div>
-        <div><span>Fleet score</span><strong>{fleet.average_health_score.toFixed(1)}</strong><small>{fleet.healthy} healthy · {fleet.degraded} degraded</small></div>
+        <div><span>Fleet score</span><strong>{fleet.average_health_score.toFixed(1)}</strong><small>{fleet.healthy} healthy · {fleet.degraded} degraded · {fleet.broken} broken</small></div>
         <div className={fleet.active_incidents ? "fleet-alert" : ""}><span>Open incidents</span><strong>{fleet.active_incidents}</strong><small>{fleet.broken} blocking contract{fleet.broken === 1 ? "" : "s"}</small></div>
         <div><span>Protected output</span><strong>{fleet.protected_records}</strong><small>last known good records</small></div>
       </div>
@@ -56,7 +56,7 @@ export function FleetCommand({
         {fleet.collectors.map((collector) => (
           <button
             type="button"
-            className={collector.id === selectedCollectorId ? "fleet-row selected" : "fleet-row"}
+            className={`fleet-row status-${collector.status}${collector.id === selectedCollectorId ? " selected" : ""}`}
             key={collector.id}
             onClick={() => onSelect(collector.id)}
             aria-pressed={collector.id === selectedCollectorId}

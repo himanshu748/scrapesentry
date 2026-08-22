@@ -32,9 +32,21 @@ export type ProviderRepairEvidence = {
   latency_seconds: number;
 };
 
+// Mirrors app/models.py RepairState.
+export type RepairState =
+  | "heal_proposed"
+  | "awaiting_approval"
+  | "shadow_verifying"
+  | "approved"
+  | "rejected"
+  | "production_verifying"
+  | "recovered"
+  | "failed"
+  | "rolled_back";
+
 export type Repair = {
   id: string;
-  state: string;
+  state: RepairState;
   confidence: number;
   diff_summary: string[];
   schema_changed: boolean;
