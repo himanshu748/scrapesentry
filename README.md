@@ -1,5 +1,44 @@
 # ScrapeSentry
 
+## Demo
+
+**Watch the 3 minute walkthrough:** [scrapesentry-himanshu748.onrender.com/demo](https://scrapesentry-himanshu748.onrender.com/demo)
+_YouTube mirror: add the link here after upload._
+
+A compressed copy is committed at [`docs/demo/scrapesentry-demo.mp4`](docs/demo/scrapesentry-demo.mp4)
+and the shot list it was built from is [`docs/demo-script.md`](docs/demo-script.md). It covers the
+project, the tech stack and architecture, the live recovery demo and what the build taught me.
+
+| | |
+|---|---|
+| Hosted demo video | https://scrapesentry-himanshu748.onrender.com/demo |
+| Live dashboard (Render) | https://scrapesentry-himanshu748.onrender.com |
+| Live dashboard (Vercel mirror) | https://scrapesentry-himanshus-projects-acd54afd.vercel.app |
+| API health | https://scrapesentry-api-himanshu748.onrender.com/health |
+| Source | https://github.com/himanshu748/scrapesentry |
+
+Both deployments run `APP_ENV=demo`: the workflow is recorded and credit safe, so nothing
+you click spends Bright Data credits. The Render services are on the free tier and take
+around 40 seconds to wake from cold.
+
+### 60 seconds, four clicks
+
+1. Open the [console](https://scrapesentry-himanshu748.onrender.com/console). Fleet score
+   reads `100.0`, one real Bright Data collector, 12 protected records.
+2. Click **Simulate selector drift**. Health falls to `64 Red`, 12 rows are quarantined
+   and the protected downstream feed flips to **Fallback active** while still serving
+   12 verified rows.
+3. Click **Generate repair**, then **Approve repair**. Read the before/after diff:
+   `price_text "£22.65"` becomes `price 22.65`, `stock_label "In stock"` becomes
+   `availability "in_stock"`. Nothing reaches production without the human click.
+4. Click **Run guarded verification**. Canary and production gates both pass, the incident
+   closes and the feed returns to **Verified live**.
+
+![Drift detected and downstream held clean](docs/demo/03-drift.jpg)
+![Repair candidate with before and after selector diff](docs/demo/05-repair-diff.jpg)
+
+---
+
 ScrapeSentry is an MCP server and operator dashboard that detects silent scraper drift, quarantines unsafe output and sends actionable failures to Bright Data Self-Healing. Every repair is held behind an approval gate then checked on canary and production output before recovery is declared.
 
 Source: [github.com/himanshu748/scrapesentry](https://github.com/himanshu748/scrapesentry)
@@ -38,10 +77,10 @@ The included scenarios are repeatable and do not depend on a live target website
 5. **Generate repair** creates a deterministic candidate for the uninterrupted judge demo while the live-evidence panel shows the actual Bright Data Self-Healing job that produced a successful diff and preview.
 6. **Approve repair** records the human decision. Schema changes require a second explicit override.
 7. The provider evidence panel records the repair job, progress state, draft state and measured latency. The recorded demo is labeled clearly and does not pretend to be a live Self-Healing run.
-8. **Run guarded verification** checks canary output then a fresh production snapshot.
+8. **Run guarded verification** checks the candidate against the contract, then runs a second production collection through the same contract. In the recorded demo both gates read the repaired snapshot, so the run is deterministic; in live mode the canary and production collections are two separate Bright Data calls.
 9. ScrapeSentry marks the collector recovered only after both gates pass and releases the new verified snapshot to downstream consumers.
 
-The judge scorecard makes the outcome visible without reading logs: **12 records protected**, **0 bad rows served** and **under one second to detect** in the deterministic demo. Verified recovery time is recorded from quarantine to the final production gate.
+The judge scorecard makes the outcome visible without reading logs: **12 records protected**, **0 bad rows served** and **under one second to detect** in the deterministic demo. A local run on 2026-08-22 measured 0.047 s from broken collection to quarantine and 0.068 s to clear both verification gates. The audit log timestamps every transition from `snapshot_quarantined` to `recovery_verified`, so the elapsed incident time is reconstructable from the timeline.
 
 ## Verified Bright Data production evidence
 
@@ -137,7 +176,7 @@ Receivers verify `X-ScrapeSentry-Signature` against the exact request body prefi
 
 The browser talks only to the Next.js origin. A server-only route forwards API requests and adds `OPERATOR_API_TOKEN` for private production deployments, so the token never enters a browser bundle or a `NEXT_PUBLIC_*` variable. The FastAPI control plane fails closed when production mutations arrive without the matching bearer token.
 
-State-changing routes share a sliding-window limit to protect provider credits. Every API response includes `X-Request-ID`, structured domain errors return the same ID and the dashboard shows it when an operation fails. Trusted host validation, restrictive forwarding and response hardening are enabled at the server boundary.
+State-changing routes share a sliding-window limit to protect provider credits. Every API response includes `X-Request-ID`, structured domain errors return the same ID and the dashboard shows it when an operation fails. Trusted host validation and response hardening (`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) are enabled at the FastAPI boundary. The Next.js layer sets its own `X-Frame-Options` and `Referrer-Policy`. Malformed request payloads return the same structured error envelope and request ID as domain errors.
 
 `GET /api/readiness` and the `get_system_readiness` MCP tool report two separate outcomes:
 

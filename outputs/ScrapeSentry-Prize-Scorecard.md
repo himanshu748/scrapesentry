@@ -20,7 +20,7 @@ The product is submission quality. The submission package is not complete until 
 | Public source repository | `https://github.com/himanshu748/scrapesentry` | Complete |
 | Public working deployment | `https://scrapesentry-himanshu748.onrender.com/` returned HTTP 200 on August 21. The final Vercel production URL is still pending. | Complete |
 | Clear README | Architecture, setup, live mode, MCP tools and safety model are documented | Complete |
-| Demo video showing the working project | Final public YouTube URL is pending | Blocked |
+| Demo video showing the working project | Narrated 3 minute cut is built from `docs/demo-script.md`. The public YouTube URL is still pending | Blocked |
 
 ## Six equally weighted judging criteria
 
@@ -57,8 +57,11 @@ The Day 1 and Day 2 LinkedIn posts satisfy the participation requirement only if
 
 ## Remaining mandatory submission blockers
 
-1. Render and upload the working demo video.
-2. Promote the verified preview to `https://scrapesentry.vercel.app` so judges receive a stable unprotected URL.
+1. Upload the narrated demo video and put its YouTube URL in the README `## Demo` section.
+   The shot list is `docs/demo-script.md`; `docs/demo/demo-capture.mp4` is the silent
+   screen capture it was built from.
+2. Promote the verified preview to `https://scrapesentry.vercel.app` so judges receive a
+   stable unprotected URL.
 
 ## Remaining win-readiness work
 
