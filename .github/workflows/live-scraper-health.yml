@@ -15,10 +15,19 @@ concurrency:
 jobs:
   contract-check:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: books
+            collector_id: c_msxcshnz2bwrroekf3
+          - profile: github-changelog
+            collector_id: c_mt40xnf923ztcasouj
     env:
       APP_ENV: production
       BRIGHTDATA_API_TOKEN: ${{ secrets.BRIGHTDATA_API_TOKEN }}
-      BRIGHTDATA_COLLECTOR_ID: c_msxcshnz2bwrroekf3
+      BRIGHTDATA_COLLECTOR_ID: ${{ matrix.collector_id }}
+      BRIGHTDATA_LIVE_PROFILE: ${{ matrix.profile }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,14 +35,14 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -e .
-      - name: Run the real Scraper Studio collector and enforce its contract
+      - name: Run the real ${{ matrix.profile }} collector and enforce its contract
         if: ${{ env.BRIGHTDATA_API_TOKEN != '' }}
         run: python -m app.live_smoke | tee live-smoke.json
       - name: Keep the provider job ID and contract result as evidence
         if: ${{ env.BRIGHTDATA_API_TOKEN != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: brightdata-live-smoke-${{ github.run_id }}
+          name: brightdata-live-smoke-${{ matrix.profile }}-${{ github.run_id }}
           path: live-smoke.json
           retention-days: 14
       - name: Explain how to activate the live check
