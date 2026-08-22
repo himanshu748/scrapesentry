@@ -287,3 +287,13 @@ def test_demo_repair_rejects_false_provider_publish_confirmation():
 
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "provider_publish_not_required"
+
+
+def test_invalid_payload_returns_error_envelope_with_request_id():
+    response = client.post(
+        f"/api/collectors/{DEMO_COLLECTOR_ID}/check", json={"idempotency_key": "x"}
+    )
+    assert response.status_code == 422
+    body = response.json()
+    assert body["error"]["code"] == "invalid_request"
+    assert body["request_id"] == response.headers["X-Request-ID"]

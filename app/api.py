@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, Header, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -142,6 +144,23 @@ async def domain_error_handler(request: Request, error: DomainError) -> JSONResp
             request_id=getattr(request.state, "request_id", None),
         ).model_dump(),
         headers={"WWW-Authenticate": "Bearer"} if error.status_code == 401 else None,
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(
+    request: Request, error: RequestValidationError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content=ErrorEnvelope(
+            error={
+                "code": "invalid_request",
+                "message": "The request payload failed validation.",
+                "details": jsonable_encoder(error.errors()),
+            },
+            request_id=getattr(request.state, "request_id", None),
+        ).model_dump(),
     )
 
 
