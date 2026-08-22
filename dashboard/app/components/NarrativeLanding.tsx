@@ -128,6 +128,7 @@ export function SiteHeader() {
       <nav className="desktop-nav" aria-label="Primary navigation">
         <a href="/" aria-current={pathname === "/" ? "page" : undefined}>Product</a>
         <a href="/console" aria-current={pathname === "/console" ? "page" : undefined}>Console</a>
+        <a href="/demo" aria-current={pathname === "/demo" ? "page" : undefined}>Demo</a>
         <a href="/docs" aria-current={pathname === "/docs" ? "page" : undefined}>Docs</a>
         <a href="/evidence" aria-current={pathname === "/evidence" ? "page" : undefined}>Evidence</a>
       </nav>
@@ -140,6 +141,7 @@ export function SiteHeader() {
           <nav aria-label="Mobile navigation">
             <a href="/">Product</a>
             <a href="/console">Console</a>
+            <a href="/demo">Demo</a>
             <a href="/docs">Docs</a>
             <a href="/evidence">Evidence</a>
           </nav>
@@ -771,6 +773,7 @@ export function SiteFooter({ collectorId }: { collectorId?: string }) {
       <nav aria-label="Footer navigation">
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
+        <a href="/demo">Demo</a>
         <a href="/docs">Docs</a>
         <a href="/evidence">Evidence</a>
         <a href="https://github.com/himanshu748/scrapesentry" target="_blank" rel="noreferrer">GitHub</a>
