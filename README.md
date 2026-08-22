@@ -64,6 +64,21 @@ The public demo is designed to be safe for judges: it replays a deterministic fa
 | Demo video | [2 minute 56 second YouTube walkthrough](https://youtu.be/rvES9OQ8zQQ) covering the product, architecture, recovery workflow and learning |
 | AI coding assistance | Disclosed in the [AI assistance section](#ai-assistance-disclosure) |
 
+### Verify the live integration in 60 seconds
+
+1. Open the [green two-collector GitHub Actions run](https://github.com/himanshu748/scrapesentry/actions/runs/32559471569).
+2. Confirm that both matrix jobs passed: `books` and `github-changelog`.
+3. Open either job and find **Run the real collector and enforce its contract**. This step calls Bright Data Scraper Studio with the repository secret, waits for the production collection and validates the returned rows with ScrapeSentry's contract engine.
+4. Check the durable public outputs: [Books to Scrape production JSON](examples/brightdata-live-run.json) and [GitHub Changelog production JSON](examples/brightdata-live-run-2.json).
+5. Compare the recorded proof below. Each collection reached score 100 with zero contract violations.
+
+| Live collector | Bright Data collector | Verified job | Contract result |
+|---|---|---|---|
+| Books to Scrape | `c_msxcshnz2bwrroekf3` | `j_mt41y6e72pujxs21xo` | 12 records, score 100, 0 violations |
+| GitHub Changelog | `c_mt40xnf923ztcasouj` | `j_mt41y8xm1vmhxqogbg` | 51 records, score 100, 0 violations |
+
+The Actions run also contains one evidence artifact per collector with the provider job ID and contract result. GitHub retains those artifacts for 14 days. The committed JSON files remain public after the artifacts expire.
+
 ### Second live collector
 
 - Collector: `c_mt40xnf923ztcasouj`
