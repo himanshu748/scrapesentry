@@ -2,7 +2,7 @@
 
 ## Demo
 
-**Watch the 3 minute walkthrough:** [scrapesentry-himanshu748.onrender.com/demo](https://scrapesentry-himanshu748.onrender.com/demo)
+**Watch the 3 minute walkthrough:** [scrapesentry.vercel.app/demo](https://scrapesentry.vercel.app/demo)
 _YouTube mirror: add the link here after upload._
 
 A compressed copy is committed at [`docs/demo/scrapesentry-demo.mp4`](docs/demo/scrapesentry-demo.mp4)
@@ -11,9 +11,9 @@ project, the tech stack and architecture, the live recovery demo and what the bu
 
 | | |
 |---|---|
-| Hosted demo video | https://scrapesentry-himanshu748.onrender.com/demo |
+| Hosted demo video | https://scrapesentry.vercel.app/demo |
 | Live dashboard (Render) | https://scrapesentry-himanshu748.onrender.com |
-| Live dashboard (Vercel mirror) | https://scrapesentry-himanshus-projects-acd54afd.vercel.app |
+| Live dashboard (Vercel) | https://scrapesentry.vercel.app |
 | API health | https://scrapesentry-api-himanshu748.onrender.com/health |
 | Source | https://github.com/himanshu748/scrapesentry |
 
@@ -23,7 +23,7 @@ around 40 seconds to wake from cold.
 
 ### 60 seconds, four clicks
 
-1. Open the [console](https://scrapesentry-himanshu748.onrender.com/console). Fleet score
+1. Open the [console](https://scrapesentry.vercel.app/console). Fleet score
    reads `100.0`, one real Bright Data collector, 12 protected records.
 2. Click **Simulate selector drift**. Health falls to `64 Red`, 12 rows are quarantined
    and the protected downstream feed flips to **Fallback active** while still serving
